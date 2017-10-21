@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#https://github.com/Yelp/yelp-fusion/tree/master/fusion/python
 """
 Yelp Fusion API code sample.
 
@@ -59,7 +60,10 @@ GRANT_TYPE = 'client_credentials'
 DEFAULT_TERM = 'dinner'
 DEFAULT_LOCATION = 'San Francisco, CA'
 SEARCH_LIMIT = 1000
+BLOCK_LIMIT = 50
 
+
+        
 
 def obtain_bearer_token(host, path):
     """Given a bearer token, send a GET request to the API.
@@ -112,14 +116,14 @@ def request(host, path, bearer_token, url_params=None):
         'Authorization': 'Bearer %s' % bearer_token,
     }
 
-    print(u'Querying {0} ...'.format(url))
+    #print(u'Querying {0} ...'.format(url))
 
     response = requests.request('GET', url, headers=headers, params=url_params)
 
     return response.json()
 
 
-def search(bearer_token, term, location):
+def search(bearer_token, term, location, offset):
     """Query the Search API by a search term and location.
 
     Args:
@@ -133,8 +137,10 @@ def search(bearer_token, term, location):
     url_params = {
         'term': term.replace(' ', '+'),
         'location': location.replace(' ', '+'),
-        'limit': SEARCH_LIMIT
+        'limit': BLOCK_LIMIT,
+        'offset': offset
     }
+    #print(url_params)
     return request(API_HOST, SEARCH_PATH, bearer_token, url_params=url_params)
 
 
@@ -161,31 +167,39 @@ def query_api(term, location):
     """
     bearer_token = obtain_bearer_token(API_HOST, TOKEN_PATH)
 
-    response = search(bearer_token, term, location)
+    results = set()
+    
+    #with open(term+"-businesses.txt", 'w') as out:
+    for offset in range(0, SEARCH_LIMIT, 50):
+            response = search(bearer_token, term, location, offset)
+            businesses = response.get('businesses')
+            #print(response)
+            #print businesses
+            #print offset
+            
+            if businesses:
+                for business in businesses:
+                    business_id = business['id']
+                    #business_details = get_business(bearer_token, business_id)
+                    results.add(json.dumps(business))
+                    #out.write(json.dumps(business))
+                    #out.write("\n")
+            else:
+                break
+    return results
+ 
+            
+def print_queries(term, location):
+        results = query_api(term, location)
+        print(results)
+        with open(term+"-businesses.txt", 'a') as out:
+            for item in results:
+                out.write(item)
+                out.write("\n")
 
-    businesses = response.get('businesses')
-
-    if not businesses:
-        print(u'No businesses for {0} in {1} found.'.format(term, location))
-        return
-
-    business_id = businesses[0]['id']
-    print(businesses)
-    with open("output.txt", 'w') as out:
-        for business in businesses:
-            out.write(json.dumps(business))
-            out.write("\n")
-
-	
 
 
-    print(u'{0} businesses found, querying business info ' \
-        'for the top result "{1}" ...'.format(
-            len(businesses), business_id))
-    response = get_business(bearer_token, business_id)
-
-    print(u'Result for business "{0}" found:'.format(business_id))
-    pprint.pprint(response, indent=2)
+#response = get_business(bearer_token, business_id)
 
 
 def main():
@@ -200,7 +214,9 @@ def main():
     input_values = parser.parse_args()
 
     try:
-        query_api(input_values.term, input_values.location)
+        #query_api(input_values.term, input_values.location)
+        print_queries(input_values.term, input_values.location)
+
     except HTTPError as error:
         sys.exit(
             'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
