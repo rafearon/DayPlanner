@@ -138,7 +138,9 @@ def search(bearer_token, term, location, offset):
         'term': term.replace(' ', '+'),
         'location': location.replace(' ', '+'),
         'limit': BLOCK_LIMIT,
-        'offset': offset
+        'offset': offset,
+        'radius': 40000,
+        'sort_by': 'rating'
     }
     #print(url_params)
     return request(API_HOST, SEARCH_PATH, bearer_token, url_params=url_params)
@@ -186,46 +188,39 @@ def query_api(term, location):
                     #out.write("\n")
             else:
                 break
+    #print(results)
     return results
  
             
-def print_queries(term, location):
-        results = query_api(term, location)
-        print(results)
+def print_queries(term, businesses):
         with open(term+"-businesses.txt", 'a') as out:
-            for item in results:
+            for item in businesses:
                 out.write(item)
                 out.write("\n")
 
 
+#Input: array of search terms, array of locations
+#Output: Dictionary of [term: set(business)]. Each set(business) aggregates businesses for all locations
+def multi_query_business(terms, locations):
+    termDirectory = {}
+    for term in terms:
+        termBusinesses = set()
+        for location in locations:
+            termBusinesses = termBusinesses.union(query_api(term, location))
+        termDirectory[term] = termBusinesses
+    return termDirectory
+            
+                
 
-#response = get_business(bearer_token, business_id)
 
 
 def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-q', '--term', dest='term', default=DEFAULT_TERM,
-                        type=str, help='Search term (default: %(default)s)')
-    parser.add_argument('-l', '--location', dest='location',
-                        default=DEFAULT_LOCATION, type=str,
-                        help='Search location (default: %(default)s)')
-
-    input_values = parser.parse_args()
-
-    try:
-        #query_api(input_values.term, input_values.location)
-        print_queries(input_values.term, input_values.location)
-
-    except HTTPError as error:
-        sys.exit(
-            'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                error.code,
-                error.url,
-                error.read(),
-            )
-        )
-
+    restaurant = 'restaurant'
+    terms = [restaurant]
+    locations = ['Stanford, CA']
+    termDirectory = multi_query_business(terms, locations)
+    print_queries(restaurant, termDirectory[restaurant])
+    
 
 if __name__ == '__main__':
     main()
