@@ -57,15 +57,15 @@ DEFAULT_TRAVEL_TIME = .5
 def get_price(business):
   """ Returns price estimate of business
   """
-  if 'price' in business and price in PRICE_RANGE:
+  if 'price' in business and business['price'] in PRICE_RANGE:
     return PRICE_RANGE[business['price']]
   return DEFAULT_PRICE
 
 def get_travel_time(business, start_lat, start_long):
   """ Returns num hours needed to travel to business
   """
-  lat_coord = business["latitude"]
-  long_coord = business["longitude"]
+  lat_coord = business["coordinates"]["latitude"]
+  long_coord = business["coordinates"]["longitude"]
   if lat_coord and long_coord and start_lat and start_long:
     # 30 minutes for every .1 coordinate change
     return (abs(lat_coord - start_lat) + abs(long_coord - start_long)) /.1 * .5
@@ -114,8 +114,8 @@ def update_constraints(old_constraints, activity):
   """ Update constraints with activity chosen
   """
   return {
-    "lat": activity["latitude"],
-    "long": activity["longitude"],
+    "lat": activity["coordinates"]["latitude"],
+    "long": activity["coordinates"]["longitude"],
     "moneyLeft": old_constraints["moneyLeft"] - get_price(activity),
     "timeLeft": (old_constraints["timeLeft"]
       - get_duration(activity)
