@@ -58,6 +58,63 @@ GENRE_FILES = {
   "all": "business.json"
 }
 
+INDOORSY = [
+'aquariums',
+'lasertag',
+'bowling',
+'skatingrinks',
+'arcades',
+'galleries',
+'movietheaters',
+'eatertainment',
+'jazzandblues',
+'museums',
+'observatories',
+'theater',
+'planetarium',
+'spas'
+]
+
+
+THRILL = [
+'amusementparks',
+'bungeejumping',
+'freediving',
+'scuba',
+'escapegames',
+'experiences',
+'gokarts',
+'hanggliding',
+'hot_air_balloons',
+'jetskis',
+'kiteboarding',
+'mountainbiking',
+'paddleboarding',
+'paintball',
+'parasailing',
+'rafting',
+'skiing',
+'skydiving',
+'sledding',
+'snorkeling',
+'surfing',
+'tubing',
+'zorbing',
+'hauntedhouses'
+]
+
+OUTDOORSY [
+'beaches',
+'boating',
+'bocceball',
+'bubblesoccer',
+'hiking',
+'gardens',
+'farms'
+]
+
+
+
         
 
 def obtain_bearer_token(host, path):
