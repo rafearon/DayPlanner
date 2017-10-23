@@ -58,7 +58,9 @@ GENRE_FILES = {
   "all": "business.json"
 }
 
-INDOORSY = [
+GENRES = ('thrill', 'intellect', 'outdoors')
+
+INTELLECT = [
 'aquariums',
 'lasertag',
 'bowling',
@@ -72,7 +74,9 @@ INDOORSY = [
 'observatories',
 'theater',
 'planetarium',
-'spas'
+'spas',
+'restaurants',
+'bars'
 ]
 
 
@@ -100,21 +104,34 @@ THRILL = [
 'surfing',
 'tubing',
 'zorbing',
-'hauntedhouses'
+'hauntedhouses',
+'restaurant',
+'bars'
 ]
 
-OUTDOORSY [
+OUTDOORS = [
 'beaches',
 'boating',
 'bocceball',
 'bubblesoccer',
 'hiking',
 'gardens',
-'farms'
+'farms',
+'restaurants',
+'bars'
 ]
 
 
-
+def get_genre_terms(genre):
+    if genre == 'thrill':
+        return THRILL
+    elif genre == 'outdoors':
+        return OUTDOORS
+    elif genre == 'intellect':
+        return INTELLECT
+    else:
+        all_genres = set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT))
+        return list(all_genres)
         
 
 def obtain_bearer_token(host, path):
@@ -222,7 +239,7 @@ def query_api(term, location):
     bearer_token = obtain_bearer_token(API_HOST, TOKEN_PATH)
 
     results = set()
-    
+    print("Querying Yelp with term = " + term +" , location = " + location)
     #with open(term+"-businesses.txt", 'w') as out:
     for offset in range(0, SEARCH_LIMIT, 50):
             response = search(bearer_token, term, location, offset)
@@ -244,8 +261,8 @@ def query_api(term, location):
     return results
  
             
-def print_queries(category, term, businesses):
-        with open(term+".json", 'a') as out:
+def write_results_to_file(category, term, businesses):
+        with open(category+".json", 'a') as out:
             for item in businesses:
                 out.write(item)
                 out.write("\n")
@@ -267,11 +284,14 @@ def multi_query_business(terms, locations):
 
 
 def main():
-    restaurant = 'restaurant'
-    category = ''
-    terms = [restaurant]
-    termDirectory = multi_query_business(terms, LOCATIONS)
-    print_queries(category, restaurant, termDirectory[restaurant])
+    all_terms = get_genre_terms("all")
+    termDirectory = multi_query_business(all_terms, LOCATIONS)
+    for term in all_terms:
+        write_results_to_file('all', term, termDirectory[term])
+    for genre in GENRES:
+        terms_in_genre = get_genre_terms(genre)
+        for term in terms_in_genre:
+            write_results_to_file(genre, term, termDirectory[term])
     
 
 if __name__ == '__main__':
