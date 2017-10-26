@@ -34,26 +34,6 @@ PRICE_RANGE = {
 DEFAULT_DURATION = 2
 DEFAULT_TRAVEL_TIME = .5
 
-# no google maps api
-# no google places api
-# assume every activity takes 2 hours (even food)
-
-# if user wants food:
-#   with restaurants file:
-#     for each restaurant:
-#       if restaurant $$ < user $$ and restaurant.location within 25 miles of user.start and within time left:
-#         add restaurant to itinerary
-#         return
-
-# do same thing but with different file, $$, location, time (until time runs out)
-
-# constraints
-# - lat
-# - long
-# - moneyLeft
-# - timeLeft
-# - genre
-
 def get_price(business):
   """ Returns price estimate of business
   """
@@ -200,7 +180,8 @@ def main():
     print "  End time: " + str(prefs.end)
   
   businesses = load_businesses(prefs.activities or GENRE_FILES[prefs.genre])
-  restaurants = (load_businesses(prefs.restaurants or RESTAURANT_FILE) if prefs.food else None)
+  restaurants = (load_businesses(prefs.restaurants or RESTAURANT_FILE)
+    if prefs.food else None)
   itinerary = create_itinerary(prefs, businesses, restaurants)
   print_itinerary(itinerary)
 
