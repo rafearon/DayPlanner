@@ -86,13 +86,14 @@ def load_businesses(filename):
   return businesses
 
 
-def get_activity(businesses, constraints):
+def get_activity(businesses, constraints, itinerary):
   """ Returns first activity that matches constraints
   """
   for b in businesses:
     if (get_price(b) < constraints["moneyLeft"] and
       get_travel_time(b, constraints["lat"], constraints["long"]) +
-        get_duration(b) <= constraints["timeLeft"]):
+        get_duration(b) <= constraints["timeLeft"] and
+        b not in itinerary):
       return b
   return None
 
@@ -132,9 +133,9 @@ def create_itinerary(prefs, businesses, restaurants):
   while constraints['timeLeft'] > 0:
     activity = None
     if food:
-      activity = get_activity(restaurants, constraints)
+      activity = get_activity(restaurants, constraints, itinerary)
     else:
-      activity = get_activity(businesses, constraints)
+      activity = get_activity(businesses, constraints, itinerary)
     if activity:
       if prefs.verbose:
         print ""
