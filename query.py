@@ -58,7 +58,7 @@ GENRE_FILES = {
   "all": "business.json"
 }
 
-GENRES = ('thrill', 'intellect', 'outdoors')
+GENRES = ('thrill', 'intellect', 'outdoors', 'restaurants')
 
 INTELLECT = [
 'aquariums',
@@ -74,9 +74,7 @@ INTELLECT = [
 'observatories',
 'theater',
 'planetarium',
-'spas',
-'restaurants',
-'bars'
+'spas'
 ]
 
 
@@ -104,9 +102,7 @@ THRILL = [
 'surfing',
 'tubing',
 'zorbing',
-'hauntedhouses',
-'restaurant',
-'bars'
+'hauntedhouses'
 ]
 
 OUTDOORS = [
@@ -116,7 +112,10 @@ OUTDOORS = [
 'bubblesoccer',
 'hiking',
 'gardens',
-'farms',
+'farms'
+]
+
+RESTAURANTS = [
 'restaurants',
 'bars'
 ]
@@ -129,8 +128,10 @@ def get_genre_terms(genre):
         return OUTDOORS
     elif genre == 'intellect':
         return INTELLECT
+    elif genre == 'restaurants':
+        return RESTAURANTS
     else:
-        all_genres = set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT))
+        all_genres = set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT)).union(set(RESTAURANTS))
         return list(all_genres)
         
 
