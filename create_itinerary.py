@@ -143,7 +143,11 @@ def print_itinerary(itinerary):
     return
   print "Itinerary found with " + str(len(itinerary)) + " activities: "
   for i, activity in enumerate(itinerary):
-    print "  " + str(i+1) + ") " + str(activity)
+    print "  ", str(i+1) + ")", activity["name"]
+    print "    rating:", activity["rating"]
+    print "    review_count:", activity["review_count"]
+
+    print "    address:", " ".join(i for i in activity["location"]["display_address"])
 
 def get_args():
   """ Parses command line arguments.
