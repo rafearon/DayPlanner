@@ -1,0 +1,19 @@
+# Start and end time
+start_time 9:00
+end_time 17:00
+
+# meals (yes or no)
+yes
+
+# budget
+budget 100
+
+# genre (thrill, indoors, and outdoors)
+thrill
+
+# transportation (public and car)
+car
+
+# packed versus chill (TODO)
+
+# start location (long and lat) TODO
