@@ -55,21 +55,22 @@ GENRE_FILES = {
   "thrill": "thrill.json",
   "intellect": "intellect.json",
   "outdoors": "outdoors.json",
-  "all": "business.json"
+  "all": "business.json",
+  "restaurants": "restaurants.json"
 }
 
 GENRES = ('thrill', 'intellect', 'outdoors', 'restaurants')
 
 INTELLECT = [
 'aquariums',
-'lasertag',
+'laser tag',
 'bowling',
-'skatingrinks',
+'skating rinks',
 'arcades',
 'galleries',
-'movietheaters',
+'movie theaters',
 'eatertainment',
-'jazzandblues',
+'jazz and blues',
 'museums',
 'observatories',
 'theater',
@@ -79,19 +80,19 @@ INTELLECT = [
 
 
 THRILL = [
-'amusementparks',
-'bungeejumping',
-'freediving',
+'amusement parks',
+'bungee jumping',
+'free diving',
 'scuba',
-'escapegames',
+'escape games',
 'experiences',
-'gokarts',
-'hanggliding',
-'hot_air_balloons',
-'jetskis',
-'kiteboarding',
-'mountainbiking',
-'paddleboarding',
+'go karts',
+'hang gliding',
+'hot air balloons',
+'jet skis',
+'kite boarding',
+'mountain biking',
+'paddle boarding',
 'paintball',
 'parasailing',
 'rafting',
@@ -102,14 +103,15 @@ THRILL = [
 'surfing',
 'tubing',
 'zorbing',
-'hauntedhouses'
+'haunted houses',
+'sports'
 ]
 
 OUTDOORS = [
 'beaches',
 'boating',
 'bocceball',
-'bubblesoccer',
+'bubble soccer',
 'hiking',
 'gardens',
 'farms'
@@ -121,6 +123,18 @@ RESTAURANTS = [
 ]
 
 
+
+def find_genre_by_term(term):
+    if term in RESTAURANTS:
+        return 'restaurants'
+    elif term in OUTDOORS:
+        return 'outdoors'
+    elif term in THRILL:
+        return 'thrill'
+    elif term in INTELLECT:
+        return 'intellect'
+
+
 def get_genre_terms(genre):
     if genre == 'thrill':
         return THRILL
@@ -130,10 +144,39 @@ def get_genre_terms(genre):
         return INTELLECT
     elif genre == 'restaurants':
         return RESTAURANTS
+    elif genre = 'all_no_restaurants':
+        return list(set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT)))
     else:
         all_genres = set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT)).union(set(RESTAURANTS))
         return list(all_genres)
-        
+
+
+
+def avg_time_by_genre(genre, business):
+    if genre == 'restaurants':
+        return restaurant_avg_time(business)
+    elif genre == 'thrill':
+        return 120
+    elif genre == 'outdoors':
+        return 180
+    elif genre == 'intellect':
+        return 100
+
+
+
+def restaurant_avg_time(business):
+    if "price" not in business:
+        return 30
+    price = business["price"]
+    if price == "$":
+        return 20
+    elif price == "$$":
+        return 30
+    elif price == "$$$":
+        return 60
+    elif price == "$$$$":
+        return 120
+
 
 def obtain_bearer_token(host, path):
     """Given a bearer token, send a GET request to the API.
@@ -253,7 +296,12 @@ def query_api(term, location):
                 for business in businesses:
                     business_id = business['id']
                     #business_details = get_business(bearer_token, business_id)
-                    results.add(json.dumps(business))
+                    business_dict = json.loads(json.dumps(business))
+                    del business_dict['distance']
+                    genre = find_genre_by_term(term)
+                    time_spent_min = avg_time_by_genre(genre, business)
+                    business['time_spent_minutes'] = time_spent_min
+                    results.add(json.dumps(business_dict))
                     #out.write(json.dumps(business))
                     #out.write("\n")
             else:
@@ -277,9 +325,22 @@ def multi_query_business(terms, locations):
         termBusinesses = set()
         for location in locations:
             termBusinesses = termBusinesses.union(query_api(term, location))
+            
+                
+
         termDirectory[term] = termBusinesses
     return termDirectory
+
+
+def remove_duplicates(genre):
+    with open(category+".json", 'a') as out:
+            for item in businesses:
+                out.write(item)
+                out.write("\n")
             
+
+
+
                 
 
 
@@ -291,8 +352,16 @@ def main():
         write_results_to_file('all', term, termDirectory[term])
     for genre in GENRES:
         terms_in_genre = get_genre_terms(genre)
+        output_set = set()
         for term in terms_in_genre:
-            write_results_to_file(genre, term, termDirectory[term])
+            businesses = termDirectory[term]
+            for business in businesses:
+                output_set.add(business)
+        with open(genre+".json", "a") as out:
+            for item in output_set:
+                out.write(item)
+                out.write("\n")
+
     
 
 if __name__ == '__main__':
