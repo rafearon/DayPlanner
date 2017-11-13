@@ -1,4 +1,7 @@
 import json, re
+from datetime import datetime
+from datetime import timedelta
+from enum import Enum
 
 # General code for representing a weighted CSP (Constraint Satisfaction Problem).
 # All variables are being referenced by their index instead of their original
@@ -308,132 +311,97 @@ class Request:
 
     def __repr__(self): return str(self)
 
+class Genre(Enum):
+    indoors = 0
+    outdoors = 1
+    thrill = 2
+
 # Given the path to a preference file and a
 class Profile:
-    def __init__(self, bulletin, prefsPath):
+    def __init__(self, prefsPath):
         """
         Parses the preference file and generate a student's profile.
 
         @param prefsPath: Path to a txt file that specifies a student's request
             in a particular format.
         """
-        self.bulletin = bulletin
 
         # Read preferences
-        self.minUnits = 9  # minimum units per quarter
-        self.maxUnits = 12 # maximum units per quarter
-        self.quarters = [] # (e.g., Aut2013)
-        self.taken = set()  # Courses that we've taken
-        self.requests = []
+        self.budget = 100 # max money (in dollars) user will spend
+        self.start_time = None # military time HH:MM
+        self.end_time = None
+        self.total_time = None # minutes
+        self.genre = 0 # 0 = indoors, 1 = outdoors, 3 = thrill
+        self.want_food = 0 # 0 or 1
+        self.user_latitude = None # default latitude: Stanford Tresidder
+        self.user_longitude = None # default longitude: Stanford Tresidder
+
         for line in open(prefsPath):
-            m = re.match('(.*)\\s*#.*', line)
+            m = re.match('(.*)\\s*#.*', line) # remove comments
             if m: line = m.group(1)
             line = line.strip()
             if len(line) == 0: continue
 
-            # Units
-            m = re.match('minUnits (.+)', line)
+            # Budget
+            m = re.match('budget (.+)', line)
             if m:
-                self.minUnits = int(m.group(1))
-                continue
-            m = re.match('maxUnits (.+)', line)
-            if m:
-                self.maxUnits = int(m.group(1))
+                self.budget = int(m.group(1))
                 continue
 
-            # Register a quarter (quarter, year)
-            m = re.match('register (.+)', line)
+            # Genre
+            m = re.match('genre (.+)', line)
             if m:
-                quarter = m.group(1)
-                m = re.match('(Aut|Win|Spr|Sum)(\d\d\d\d)', quarter)
+                genre = m.group(1)
+                m = re.match('(indoors|outdoors|thrill)', genre)
                 if not m:
-                    raise Exception("Invalid quarter '%s', want something like Spr2013" % quarter)
-                self.quarters.append(quarter)
+                    raise Exception("Invalid genre '%s', want indoors, outdoors, or thrill" % genre)
+                self.genre = Genre[genre].value
                 continue
 
-            # Already taken a course
-            m = re.match('taken (.+)', line)
+            # Want food
+            m = re.match('meals (.+)', line)
             if m:
-                cid = self.ensure_course_id(m.group(1))
-                self.taken.add(cid)
+                self.want_food = 1 if m.group(1) == 'yes' else 0
                 continue
 
-            # Request to take something
-            # also match & to parse MS&E courses correctly
-            m = re.match('request ([\w&]+)(.*)', line)
+            # Latitude and longitude coordinates
+            m = re.match('latitude (.+)', line)
             if m:
-                cids = [self.ensure_course_id(m.group(1))]
-                quarters = []
-                prereqs = []
-                weight = 1  # Default: would want to take
-                args = m.group(2).split()
-                for i in range(0, len(args), 2):
-                    if args[i] == 'or':
-                        cids.append(self.ensure_course_id(args[i+1]))
-                    elif args[i] == 'after':  # Take after a course
-                        prereqs = [self.ensure_course_id(c) for c in args[i+1].split(',')]
-                    elif args[i] == 'in':  # Take in a particular quarter
-                        quarters = [self.ensure_quarter(q) for q in args[i+1].split(',')]
-                    elif args[i] == 'weight':  # How much is taking this class worth
-                        weight = float(args[i+1])
-                    elif args[i].startswith('#'): # Comments
-                        break
-                    else:
-                        raise Exception("Invalid arguments: %s" % args)
-                self.requests.append(Request(cids, quarters, prereqs, weight))
+                self.user_latitude = float(m.group(1))
+                continue
+            m = re.match('longitude (.+)', line)
+            if m:
+                self.user_longitude = float(m.group(1))
                 continue
 
-            raise Exception("Invalid command: '%s'" % line)
+            # Start and end time
+            m = re.match('start_time (.+)', line)
+            if m:
+                self.start_time = datetime.strptime(m.group(1), '%H:%M')
+                continue
+            m = re.match('end_time (.+)', line)
+            if m:
+                self.end_time = datetime.strptime(m.group(1), '%H:%M')
+                continue
 
-        # Determine any missing prereqs and validate the request.
-        self.taken = set(self.taken)
-        self.taking = set()
+        # Determine total time
+        if not self.start_time or not self.end_time:
+            raise Exception("Must specify a valid start and end time")
+        self.total_time = (self.end_time - self.start_time).seconds / 60
 
-        # Make sure each requested course is taken only once
-        for req in self.requests:
-            for cid in req.cids:
-                if cid in self.taking:
-                    raise Exception("Cannot request %s more than once" % cid)
-            self.taking.update(req.cids)
+        if not self.user_latitude or not self.user_longitude:
+            raise Exception("Must specify valid starting latitude and longitude coordinates")
 
-        # Make sure user-designated prerequisites are requested
-        for req in self.requests:
-            for prereq in req.prereqs:
-                if prereq not in self.taking:
-                    raise Exception("You must take " + prereq)
-
-        # Add missing prerequisites if necessary
-        for req in self.requests:
-            for cid in req.cids:
-                course = self.bulletin.courses[cid]
-                for prereq_cid in course.prereqs:
-                    if prereq_cid in self.taken:
-                        continue
-                    elif prereq_cid in self.taking:
-                        if prereq_cid not in req.prereqs:
-                            req.prereqs.append(prereq_cid)
-                            print "INFO: Additional prereqs inferred: %s after %s" % \
-                                (cid, prereq_cid)
-                    else:
-                        print "WARNING: missing prerequisite of %s -- %s; you should add it as 'taken' or 'request'" %  \
-                            (cid, self.bulletin.courses[prereq_cid].short_str())
+       # TODO: any other error checking we want to do on user input
 
     def print_info(self):
-        print "Units: %d-%d" % (self.minUnits, self.maxUnits)
-        print "Quarter: %s" % self.quarters
-        print "Taken: %s" % self.taken
-        print "Requests:"
-        for req in self.requests: print '  %s' % req
-
-    def ensure_course_id(self, cid):
-        if cid not in self.bulletin.courses:
-            raise Exception("Invalid course ID: '%s'" % cid)
-        return cid
-
-    def ensure_quarter(self, quarter):
-        if quarter not in self.quarters:
-            raise Exception("Invalid quarter: '%s'" % quarter)
-        return quarter
+        print "Budget: %d" % self.budget
+        start_time = self.start_time.strftime('%H:%M')
+        end_time = self.end_time.strftime('%H:%M')
+        print "Time: %s - %s (total of %d minutes)" % (start_time, end_time, self.total_time)
+        print "Genre: %s" % self.genre
+        print "Food: %s" % ('yes' if self.want_food else 'no')
+        print "Starting coordinates: (%d, %d)" % (self.user_latitude, self.user_longitude)
 
 def extract_course_scheduling_solution(profile, assign):
     """
