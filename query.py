@@ -48,7 +48,7 @@ DEFAULT_LOCATION = 'San Francisco, CA'
 SEARCH_LIMIT = 1000
 BLOCK_LIMIT = 50
 
-LOCATIONS = ["San Francisco, CA", "Oakland, CA", "Berkeley, CA", "Pacifica, CA", "South San Francisco, CA", "San Mateo, CA", "Redwood City, CA", "Mountain View/Sunnyvale, CA", "San Jose, CA", "Santa Cruz, CA", "Fremont, CA", "Morgan Hills, CA", "Pescadero, CA","Half Moon Bay, CA"]
+LOCATIONS = ["San Francisco, CA", "Oakland, CA", "Berkeley, CA", "Pacifica, CA", "South San Francisco, CA", "San Mateo, CA", "Redwood City, CA", "Mountain View, CA", "Sunnyvale, CA", "San Jose, CA", "Santa Cruz, CA", "Fremont, CA", "Morgan Hills, CA", "Pescadero, CA","Half Moon Bay, CA"]
 
 
 GENRE_FILES = {
@@ -75,7 +75,10 @@ INTELLECT = [
 'observatories',
 'theater',
 'planetarium',
-'spas'
+'spas',
+'concerts',
+'shopping',
+'malls'
 ]
 
 
@@ -114,7 +117,9 @@ OUTDOORS = [
 'bubble soccer',
 'hiking',
 'gardens',
-'farms'
+'farms',
+'parks',
+'monuments'
 ]
 
 RESTAURANTS = [
@@ -144,7 +149,7 @@ def get_genre_terms(genre):
         return INTELLECT
     elif genre == 'restaurants':
         return RESTAURANTS
-    elif genre = 'all_no_restaurants':
+    elif genre == 'all_no_restaurants':
         return list(set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT)))
     else:
         all_genres = set(THRILL).union(set(OUTDOORS)).union(set(INTELLECT)).union(set(RESTAURANTS))
@@ -300,7 +305,7 @@ def query_api(term, location):
                     del business_dict['distance']
                     genre = find_genre_by_term(term)
                     time_spent_min = avg_time_by_genre(genre, business)
-                    business['time_spent_minutes'] = time_spent_min
+                    business_dict['time_spent_minutes'] = time_spent_min
                     results.add(json.dumps(business_dict))
                     #out.write(json.dumps(business))
                     #out.write("\n")
