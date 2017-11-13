@@ -1,198 +1,184 @@
 import collections, util, copy
 
+import geopy.distance
+
+time_per_mile = 2 # minutes
+
+def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
+    coords_1 = (a_latitude, a_longitude)
+    coords_2 = (b_latitude, b_longitude)
+    distance = geopy.distance.vincenty(coords_1, coords_2).miles
+    return distance*time_per_mile
+
+
+def get_sum_variable(csp, name, variables, maxSum, factor):
+    domain = [(a, b) for a in range(0, maxSum + 1) for b in range(0, maxSum + 1)]
+    result = ('sum', name, 'aggregated')
+    csp.add_variable(result, [a for a in range(0, maxSum + 1)])
+
+    # no input variable, result sum should be 0
+    if len(variables) == 0:
+        csp.add_unary_factor(result, lambda val: val == 0)
+        return result
+    
+    for i, X_i in enumerate(variables):
+        # create auxiliary variable for variable i
+        # use systematic naming to avoid naming collision
+        A_i = ('sum', name, i)
+        csp.add_variable(A_i, domain)
+
+        # incorporate information from X_i
+        csp.add_binary_factor(X_i, A_i, factor)
+
+        if i == 0:
+            csp.add_unary_factor(A_i, lambda a: a[0] == 0)
+        else:
+            # consistency between A_{i-1} and A_i
+            def factor2(b1, b2):
+                return b1[1] == b2[0]
+            csp.add_binary_factor(('sum', name, i - 1), A_i, factor2)
+
+            if i == len(variables) - 1:
+                csp.add_binary_factor(result, A_i, lambda a, b: a == b[1])
+    return result
+
 # A class providing methods to generate CSP that can solve the day scheduling
 # problem.
 class SchedulingCSPConstructor():
 
-    def __init__(self, bulletin, profile):
-        """
-        Saves the necessary data.
+    def __init__(self, activities, restaraunts, profile, genre):
+        self.activities = activities[profile.genre]
+        self.profile = profile
+        self.num_slots = 10 # always keep this even!
+        self.restaraunts = restaraunts
+        self.max_travel_time = 60 #mins
 
-        @param bulletin: Stanford Bulletin that provides a list of courses
-        @param profile: A student's profile and requests
-        """
-        self.activities = activities # yelp data (based on genre) TODO
-        self.profile = profile # user input
-        self.num_slots = 10
-        self.restaraunts = #TODO
+    def add_variables(self, csp, user_long, user_lat):
+        # based on the bay area
+        min_latitude = 36.4
+        max_latitude = 38.2
+        min_longitude = -122.7
+        max_longitude = -121.7
 
-    def add_variables(self, csp):
-        """
-        Adding the variables into the CSP. Each variable, (request, quarter),
-        can take on the value of one of the courses requested in request or None.
-        For instance, for quarter='Aut2013', and a request object, request, generated
-        from 'CS221 or CS246', then (request, quarter) should have the domain values
-        ['CS221', 'CS246', None]. Conceptually, if var is assigned 'CS221'
-        then it means we are taking 'CS221' in 'Aut2013'. If it's None, then
-        we not taking either of them in 'Aut2013'.
+        # if we make this delta smaller, it might crash!
+        delta = .1
 
-        @param csp: The CSP where the additional constraints will be added to.
-        """
+        time_domain = []
+        for x in range(0, self.max_travel_time + 1):
+            a_latitude = min_latitude
+            while a_latitude < max_latitude:
+                a_longitude = min_longitude
+                while a_longitude < max_longitude:
+                    b_latitude = min_latitude
+                    while b_latitude < max_latitude:
+                        b_longitude = min_longitude
+                        while b_longitude < max_longitude:
+                            time_domain.append({"duration": x, "a_latitude": a_latitude, "a_longitude": a_longitude, "b_latitude": b_latitude, "b_longitude": b_longitude})
+                            b_longitude = b_longitude + delta
+                        b_latitude = b_latitude + delta
+                    a_longitude = a_longitude + delta
+                a_latitude = a_latitude + delta
+        home_domain = [{"cost": 0, "duration": 0, "longitude": user_long, "latitude": user_lat, "rating": 5, "is_food": 0}]
         
-        max_travel_time = 60 #mins
-        time_domain = range(0, max_travel_time + 1) # max travel time
         # slots (including the travel time)
-        for i in range(0, num_slots):
+        for i in range(0, self.num_slots):
             if i == 0:
-                csp.add_variable(((i, "home"), home_domain) #TODO fill home domain with fake activity of money 0 and time 0
+                csp.add_variable(i, home_domain)
                 continue
             if i % 2 == 0:
-                csp.add_variable((i, "activity"), self.activities + self.restaraunts + [None])
+                csp.add_variable(i, self.activities + self.restaraunts + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
-                csp.add_variable((i, "travel"), time_domain + [None])
+                csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
 
-    # TODO
-    # add durations for food
-    # add durations for activities
+    # budget: value of (i, "activity") summed up less than user budget
+    def add_budget_constraints(self, csp):
+        variables = []
+        for i in range(0, self.num_slots):
+            if i != 0 and i % 2 == 0:
+                variables.append(i)
+         def factor(a, b):
+            val = 0
+            if a != None:
+                val = a.cost
+            return b[1] == b[0] + val
+        result = get_sum_variable(csp, "budget", variables, self.profile.budget. factor)
+        csp.add_unary_factor(result, lambda val: val <= self.profile.budget)
 
-    # constraints
-    # budget: value of (i, "activity").money summed up less than user budget
-    # time: value of (i, "activity").time and (i, "travel") summed up less than user time
+    # time: value of (i, "activity").duration and (i, "travel").duration summed up less than user time
+    def add_time_constraints(self, csp):
+        variables = []
+        for i in range(0, self.num_slots):
+            variables.append(i)
+         def factor(a, b):
+            val = 0
+            if a != None:
+                val = a.duration
+            return b[1] == b[0] + val
+        result = get_sum_variable(csp, "time", variables, self.profile.total_time. factor)
+        csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
+
     # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vv
+    def add_weighted_travel_time_constraints(self, csp):
+        for i in range(0, self.num_slots):
+            if i % 2 != 0:
+                def factor(a):
+                    if a == None:
+                        return 0.5 # neutral value so we don't promote/demote empty slots
+                    else:
+                        if a == 0: return .9
+                        return 1/a.duration
+                csp.add_unary_factor(i, factor)
+
     # food: sum number of activities that have food, and if they want food it has to equal one or else 0
-    # travel time: ternary factor where for each travel slot, travel_time(prev_activity, next_activity) = travel_time, set (i, "travel") equal to that
+    def add_food_constraints(self, csp):
+        num_restaraunts = self.profile.want_food
+        variables = []
+        for i in range(0, self.num_slots):
+            if i != 0 and i % 2 == 0:
+                variables.append(i)
+         def factor(a, b):
+            val = 0
+            if a != None:
+                val = a.is_food
+            return b[1] == b[0] + val
+        result = get_sum_variable(csp, "food", variables, num_restaraunts. factor)
+        csp.add_unary_factor(result, lambda val: val == num_restaraunts)
+
+    # travel time: binary factor where for each travel slot, travel_time(prev_activity, next_activity) = travel_time, set (i, "travel") equal to that
+    def add_slot_travel_time_constraints(self, csp):
+        for i in range(1, self.num_slots):
+            if i % 2 != 0:
+                def factor_before(a, b):
+                    if a is None and b is not None:
+                        return 0
+                    if a is None and b is None: 
+                        return 1
+                    if a is not None and b is None:
+                        return 1
+                    return a.latitude == b.a_latitude and a.longitude == b.a_longitude
+                def factor_after(b, a):
+                    if b is None and a is not None:
+                        return 0
+                    if b is None and a is None: 
+                        return 1
+                    if b is not None and a is None:
+                        return 1
+                    return a.latitude == b.b_latitude and a.longitude == b.b_longitude
+                def factor_duration(a):
+                    if a is None:
+                        return 1
+                    return a.duration == find_travel_time(a.a_latitude, a.a_longitude, b.b_latitude, b.b_longitude)
+                csp.add_binary_factor(i-1, i, factor_before)
+                csp.add_binary_factor(i, i+1, factor_after)
+                csp.add_unary_factor(i, factor_duration)
+
     # rating: for the value of each (i, "activity"), we give a higher weight for a better rating, UNARY FACTOR
-
-    def add_bulletin_constraints(self, csp):
-        """
-        Add the constraints that a course can only be taken if it's offered in
-        that quarter.
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        for request in self.profile.requests:
-            for quarter in self.profile.quarters:
-                csp.add_unary_factor((request, quarter), \
-                    lambda cid: cid is None or \
-                        self.bulletin.courses[cid].is_offered_in(quarter))
-
-    def add_norepeating_constraints(self, csp):
-        """
-        No course can be repeated. Coupling with our problem's constraint that
-        only one of a group of requested course can be taken, this implies that
-        every request can only be satisfied in at most one quarter.
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        for request in self.profile.requests:
-            for quarter1 in self.profile.quarters:
-                for quarter2 in self.profile.quarters:
-                    if quarter1 == quarter2: continue
-                    csp.add_binary_factor((request, quarter1), (request, quarter2), \
-                        lambda cid1, cid2: cid1 is None or cid2 is None)
-
-    def get_basic_csp(self):
-        """
-        Return a CSP that only enforces the basic constraints that a course can
-        only be taken when it's offered and that a request can only be satisfied
-        in at most one quarter.
-
-        @return csp: A CSP where basic variables and constraints are added.
-        """
-        csp = util.CSP()
-        self.add_variables(csp)
-        self.add_bulletin_constraints(csp)
-        self.add_norepeating_constraints(csp)
-        return csp
-
-    def add_quarter_constraints(self, csp):
-        """
-        If the profile explicitly wants a request to be satisfied in some given
-        quarters, e.g. Aut2013, then add constraints to not allow that request to
-        be satisfied in any other quarter.
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        # Problem 3a
-        # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
-        # END_YOUR_CODE
-
-    def add_request_weights(self, csp):
-        """
-        Incorporate weights into the CSP. By default, a request has a weight
-        value of 1 (already configured in Request). You should only use the
-        weight when one of the requested course is in the solution. A
-        unsatisfied request should also have a weight value of 1.
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        for request in self.profile.requests:
-            for quarter in self.profile.quarters:
-                csp.add_unary_factor((request, quarter), \
-                    lambda cid: request.weight if cid != None else 1.0)
-
-    def add_prereq_constraints(self, csp):
-        """
-        Adding constraints to enforce prerequisite. A course can have multiple
-        prerequisites. You can assume that *all courses in req.prereqs are
-        being requested*. Note that if our parser inferred that one of your
-        requested course has additional prerequisites that are also being
-        requested, these courses will be added to req.prereqs. You will be notified
-        with a message when this happens. Also note that req.prereqs apply to every
-        single course in req.cids. If a course C has prerequisite A that is requested
-        together with another course B (i.e. a request of 'A or B'), then taking B does
-        not count as satisfying the prerequisite of C. You cannot take a course
-        in a quarter unless all of its prerequisites have been taken *before* that
-        quarter. You should take advantage of get_or_variable().
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        # Iterate over all request courses
-        for req in self.profile.requests:
-            if len(req.prereqs) == 0: continue
-            # Iterate over all possible quarters
-            for quarter_i, quarter in enumerate(self.profile.quarters):
-                # Iterate over all prerequisites of this request
-                for pre_cid in req.prereqs:
-                    # Find the request with this prerequisite
-                    for pre_req in self.profile.requests:
-                        if pre_cid not in pre_req.cids: continue
-                        # Make sure this prerequisite is taken before the requested course(s)
-                        prereq_vars = [(pre_req, q) \
-                            for i, q in enumerate(self.profile.quarters) if i < quarter_i]
-                        v = (req, quarter)
-                        orVar = get_or_variable(csp, (v, pre_cid), prereq_vars, pre_cid)
-                        # Note this constraint is enforced only when the course is taken
-                        # in `quarter` (that's why we test `not val`)
-                        csp.add_binary_factor(orVar, v, lambda o, val: not val or o)
-
-    def add_unit_constraints(self, csp):
-        """
-        Add constraint to the CSP to ensure that the total number of units are
-        within profile.minUnits/maxUnits, inclusively. The allowed range for
-        each course can be obtained from bulletin.courses[cid].minUnits/maxUnits.
-        For a request 'A or B', if you choose to take A, then you must use a unit
-        number that's within the range of A. You should introduce any additional
-        variables that you need. In order for our solution extractor to
-        obtain the number of units, for every requested course, you must have
-        a variable named (courseId, quarter) (e.g. ('CS221', 'Aut2013')) and
-        its assigned value is the number of units.
-        You should take advantage of get_sum_variable().
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        # Problem 3b
-        # Hint 1: read the documentation above carefully
-        # Hint 2: the domain for each (courseId, quarter) variable should contain 0
-        #         because the course might not be taken
-        # Hint 3: use nested functions and lambdas like what get_or_variable and
-        #         add_prereq_constraints do
-        # Hint 4: don't worry about quarter constraints in each Request as they'll
-        #         be enforced by the constraints added by add_quarter_constraints
-
-        # BEGIN_YOUR_CODE (our solution is 16 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
-        # END_YOUR_CODE
-
-    def add_all_additional_constraints(self, csp):
-        """
-        Add all additional constraints to the CSP.
-
-        @param csp: The CSP where the additional constraints will be added to.
-        """
-        self.add_quarter_constraints(csp)
-        self.add_request_weights(csp)
-        self.add_prereq_constraints(csp)
-        self.add_unit_constraints(csp)
+    def add_rating_constraints(self, csp):
+        for i in range(1, self.num_slots):
+            if i % 2 == 0:
+                def factor(a):
+                    if a is None:
+                        return 1 # in order to promote having filled slots (this is the only place we explicitly promote filled slots)
+                    return a.rating
+                csp.add_unary_factor(i, factor)
