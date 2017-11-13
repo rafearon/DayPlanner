@@ -242,81 +242,72 @@ def get_or_variable(csp, name, variables, value):
     return result
 
 ############################################################
-# Course scheduling specifics.
+# Day planner specifics.
 
-# Information about a course:
-# - self.cid: course ID (e.g., CS221)
-# - self.name: name of the course (e.g., Artificial Intelligence)
-# - self.quarters: quarters without the years (e.g., Aut)
-# - self.minUnits: minimum allowed units to take this course for (e.g., 3)
-# - self.maxUnits: maximum allowed units to take this course for (e.g., 3)
-# - self.prereqs: list of course IDs that must be taken before taking this course.
-class Course:
-    def __init__(self, info):
-        self.__dict__.update(info)
+# Information about an activity:
+# self.name: string
+# self.unique_id: number
+# self.latitude
+# self.longitude
+# self.rating: int from 1 to 5
+# self.duration: in minutes
+# self.cost: in dollars (expecting one number)
+# self.is_food: 1 if restaurant else 0
+class Activity:
+    def __init__(self, unique_id, info, is_restaurant):
+        self.name = info['name']
+        self.unique_id = unique_id
+        self.latitude = float(info['coordinates']['latitude'])
+        self.longitude = float(info['coordinates']['longitude'])
+        self.rating = float(info['rating'])
+        self.duration = int(info['time_spent_minutes'])
+        self.cost = Price[info['price'].replace("$", "m")].value if 'price' in info else 0
+        self.is_food = is_restaurant
 
-    # Return whether this course is offered in |quarter| (e.g., Aut2013).
-    def is_offered_in(self, quarter):
-        return any(quarter.startswith(q) for q in self.quarters)
-
-    def short_str(self): return '%s: %s' % (self.cid, self.name)
-
-    def __str__(self):
-        return 'Course{cid: %s, name: %s, quarters: %s, units: %s-%s, prereqs: %s}' % (self.cid, self.name, self.quarters, self.minUnits, self.maxUnits, self.prereqs)
-
-
-# Information about all the courses
-class CourseBulletin:
-    def __init__(self, coursesPath):
-        """
-        Initialize the bulletin.
-
-        @param coursePath: Path of a file containing all the course information.
-        """
-        # Read courses (JSON format)
-        self.courses = {}
-        info = json.loads(open(coursesPath).read())
-        for courseInfo in info.values():
-            course = Course(courseInfo)
-            self.courses[course.cid] = course
-
-# A request to take one of a set of courses at some particular times.
-class Request:
-    def __init__(self, cids, quarters, prereqs, weight):
-        """
-        Create a Request object.
-
-        @param cids: list of courses from which only one is chosen.
-        @param quarters: list of strings representing the quarters (e.g. Aut2013)
-            the course must be taken in.
-        @param prereqs: list of strings representing courses pre-requisite of
-            the requested courses separated by comma. (e.g. CS106,CS103,CS109)
-        @param weight: real number denoting how much the student wants to take
-            this/or one the requested courses.
-        """
-        self.cids = cids
-        self.quarters = quarters
-        self.prereqs = prereqs
-        self.weight = weight
+    def short_str(self): return self.name
 
     def __str__(self):
-        return 'Request{%s %s %s %s}' % \
-            (self.cids, self.quarters, self.prereqs, self.weight)
+        return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, is_food: %d}' % 
+            (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.is_food))
 
-    def __eq__(self, other): return str(self) == str(other)
 
-    def __cmp__(self, other): return cmp(str(self), str(other))
+# Information about all the activities
+class ActivityCollection:
+    def __init__(self, pathsByGenre):
+        """
+        Initialize the collection of activities.
 
-    def __hash__(self): return hash(str(self))
+        @param profile: a user profile of preferences
+        @param activitiesPath: Path of a file containing all the non-food activities information.
+        @param activitiesPath: Path of a file containing all the restaurant information.
+        """
+        # Read activities
+        self.activities = dict((genre, []) for genre in pathsByGenre.keys())
+        self.cur_id = 0
+        for genre, path in pathsByGenre.iteritems():
+            self.load_activities(path, genre)
 
-    def __repr__(self): return str(self)
+    def load_activities(self, path, genre):
+        with open(path, 'r') as activities:
+            for a in activities:
+                info = json.loads(a)
+                if not self.is_valid_activity(info): continue
+                activity = Activity(self.cur_id, info, genre == 'food')
+                self.activities[genre].append(activity)
+                self.cur_id += 1
 
-class Genre(Enum):
-    indoors = 0
-    outdoors = 1
-    thrill = 2
+    def is_valid_activity(self, info):
+        return not (info['coordinates']['latitude'] is None or
+            info['coordinates']['longitude'] is None)
 
-# Given the path to a preference file and a
+class Price(Enum):
+    # We need to use m instead $ because $ is an illegal character for a var name
+    m = 10
+    mm = 30
+    mmm = 60
+    mmmm = 100
+
+# Given the path to a preference file, create Profile instance out of user prefs
 class Profile:
     def __init__(self, prefsPath):
         """
@@ -331,7 +322,7 @@ class Profile:
         self.start_time = None # military time HH:MM
         self.end_time = None
         self.total_time = None # minutes
-        self.genre = 0 # 0 = indoors, 1 = outdoors, 3 = thrill
+        self.genre = None # indoors, outdoors, thrill
         self.want_food = 0 # 0 or 1
         self.user_latitude = None # default latitude: Stanford Tresidder
         self.user_longitude = None # default longitude: Stanford Tresidder
@@ -355,7 +346,7 @@ class Profile:
                 m = re.match('(indoors|outdoors|thrill)', genre)
                 if not m:
                     raise Exception("Invalid genre '%s', want indoors, outdoors, or thrill" % genre)
-                self.genre = Genre[genre].value
+                self.genre = genre
                 continue
 
             # Want food
@@ -392,6 +383,9 @@ class Profile:
         if not self.user_latitude or not self.user_longitude:
             raise Exception("Must specify valid starting latitude and longitude coordinates")
 
+        if not self.genre:
+            raise Exception("Must specify valid genre")
+
        # TODO: any other error checking we want to do on user input
 
     def print_info(self):
@@ -401,7 +395,7 @@ class Profile:
         print "Time: %s - %s (total of %d minutes)" % (start_time, end_time, self.total_time)
         print "Genre: %s" % self.genre
         print "Food: %s" % ('yes' if self.want_food else 'no')
-        print "Starting coordinates: (%d, %d)" % (self.user_latitude, self.user_longitude)
+        print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
 
 def extract_course_scheduling_solution(profile, assign):
     """
