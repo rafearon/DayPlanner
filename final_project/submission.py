@@ -93,28 +93,34 @@ class SchedulingCSPConstructor():
 
     # budget: value of (i, "activity") summed up less than user budget
     def add_budget_constraints(self, csp):
-        variables = []
-        for i in range(0, self.num_slots):
-            if i != 0 and i % 2 == 0:
-                variables.append(i)
-         def factor(a, b):
+        def factor(a, b):
             val = 0
             if a != None:
                 val = a.cost
             return b[1] == b[0] + val
+
+
+        variables = []
+        for i in range(0, self.num_slots):
+            if i != 0 and i % 2 == 0:
+                variables.append(i)
+
+         
         result = get_sum_variable(csp, "budget", variables, self.profile.budget. factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.budget)
 
     # time: value of (i, "activity").duration and (i, "travel").duration summed up less than user time
     def add_time_constraints(self, csp):
-        variables = []
-        for i in range(0, self.num_slots):
-            variables.append(i)
-         def factor(a, b):
+        def factor(a, b):
             val = 0
             if a != None:
                 val = a.duration
             return b[1] == b[0] + val
+
+        variables = []
+        for i in range(0, self.num_slots):
+            variables.append(i)
+        
         result = get_sum_variable(csp, "time", variables, self.profile.total_time. factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
 
@@ -132,16 +138,20 @@ class SchedulingCSPConstructor():
 
     # food: sum number of activities that have food, and if they want food it has to equal one or else 0
     def add_food_constraints(self, csp):
+        def factor(a, b):
+            val = 0
+            if a != None:
+                val = a.is_food
+            return b[1] == b[0] + val
+
+
+
         num_restaraunts = self.profile.want_food
         variables = []
         for i in range(0, self.num_slots):
             if i != 0 and i % 2 == 0:
                 variables.append(i)
-         def factor(a, b):
-            val = 0
-            if a != None:
-                val = a.is_food
-            return b[1] == b[0] + val
+        
         result = get_sum_variable(csp, "food", variables, num_restaraunts. factor)
         csp.add_unary_factor(result, lambda val: val == num_restaraunts)
 
