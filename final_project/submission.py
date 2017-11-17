@@ -454,6 +454,19 @@ class SchedulingCSPConstructor():
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
         print "ending time contraints"
 
+    def add_different_activity_constraints(self, csp):
+        print "starting add_different_activity_constraints"
+        def factor(a, b):
+            if a == None or b == None: return 1
+            return a != b
+
+        variables = []
+        for i in range(0, self.num_slots): # TODO: make this be n-squared
+            if i % 2 == 0 and i + 2 <= self.num_slots:
+                csp.add_binary_factor(i, i +1, factor)
+
+        print "ending add_different_activity_constraints"
+
     # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vv
     def add_weighted_travel_time_constraints(self, csp):
         print "starting add weighted travel time constaints"
@@ -540,5 +553,6 @@ class SchedulingCSPConstructor():
         csp = util.CSP()
         self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
         self.add_budget_constraints(csp)
+        self.add_different_activity_constraints(csp)
         # self.add_time_constraints(csp)
         return csp
