@@ -132,7 +132,7 @@ class BacktrackingSearch():
             if w == 0: return w
         return w
 
-    def solve(self, csp, mcv = False, ac3 = False):
+    def solve(self, csp, mcv = False, ac3 = False, max_num_assignments = 10):
         """
         Solves the given weighted CSP using heuristics as specified in the
         parameter. Note that unlike a typical unweighted CSP where the search
@@ -158,6 +158,9 @@ class BacktrackingSearch():
         # The dictionary of domains of every variable in the CSP.
         self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
 
+        # Set maximum number of assignments
+        self.max_num_assignments = max_num_assignments
+
         print "starting backtrack"
         # Perform backtracking search.
         self.backtrack({}, 0, 1)
@@ -180,6 +183,8 @@ class BacktrackingSearch():
 
         self.numOperations += 1
         assert weight > 0
+
+        if self.numAssignments >= self.max_num_assignments: return
 
         if numAssigned == self.csp.numVars:
             # A satisfiable solution have been found. Update the statistics.

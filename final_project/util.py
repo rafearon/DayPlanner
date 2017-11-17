@@ -422,6 +422,13 @@ class Profile:
         print "Food: %s" % ('yes' if self.want_food else 'no')
         print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
 
+def print_all_scheduling_solutions(solutions, profile, ac):
+    if solutions is None: return
+    print "all solutions"
+    for s in solutions:
+        print_scheduling_solution(s, profile, ac)
+        print
+
 def print_scheduling_solution(solution, profile, ac):
     if solution == None:
         print "No schedule found that satisfied all the constraints."
