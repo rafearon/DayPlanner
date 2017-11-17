@@ -104,6 +104,9 @@ class CSP:
             print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             raise
 
+        print var1, 'q'
+        print var2, 'r'
+        print self.values
         self.update_binary_factor_table(var1, var2,
             {val1: {val2: float(factor_func(val1, val2)) \
                 for val2 in self.values[var2]} for val1 in self.values[var1]})
