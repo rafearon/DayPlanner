@@ -371,7 +371,7 @@ class SchedulingCSPConstructor():
         self.profile = profile
         self.num_slots = 10 # always keep this even!
         self.restaraunts = activities['food']
-        self.max_travel_time = 60 #mins
+        self.max_travel_time = 15 #mins
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
@@ -382,7 +382,7 @@ class SchedulingCSPConstructor():
         max_longitude = -121.7
 
         # if we make this delta smaller, it might crash!
-        delta = .1
+        delta = 1
 
         time_domain = []
         for x in range(0, self.max_travel_time + 1):
@@ -399,6 +399,7 @@ class SchedulingCSPConstructor():
                         b_latitude = b_latitude + delta
                     a_longitude = a_longitude + delta
                 a_latitude = a_latitude + delta
+        print "length of time domain is ", len(time_domain)
         home_domain = [{"cost": 0, "duration": 0, "longitude": user_long, "latitude": user_lat, "rating": 5, "is_food": 0}]
         
         # slots (including the travel time)
@@ -438,7 +439,6 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                print a
                 val = a.duration
             return b[1] == b[0] + val
 
