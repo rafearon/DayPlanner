@@ -46,11 +46,11 @@ def get_sum_variable(csp, name, variables, maxSum, factor):
 # problem.
 class SchedulingCSPConstructor():
 
-    def __init__(self, activities, restaraunts, profile, genre):
+    def __init__(self, activities, profile):
         self.activities = activities[profile.genre]
         self.profile = profile
         self.num_slots = 10 # always keep this even!
-        self.restaraunts = restaraunts
+        self.restaraunts = activities['food']
         self.max_travel_time = 60 #mins
 
     def add_variables(self, csp, user_long, user_lat):
@@ -106,7 +106,7 @@ class SchedulingCSPConstructor():
                 variables.append(i)
 
          
-        result = get_sum_variable(csp, "budget", variables, self.profile.budget. factor)
+        result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.budget)
 
     # time: value of (i, "activity").duration and (i, "travel").duration summed up less than user time
@@ -192,3 +192,14 @@ class SchedulingCSPConstructor():
                         return 1 # in order to promote having filled slots (this is the only place we explicitly promote filled slots)
                     return a.rating
                 csp.add_unary_factor(i, factor)
+
+    def get_basic_csp(self):
+        """
+        Return a CSP that only enforces the basic budget constraints
+
+        @return csp: A CSP where basic variables and constraints are added.
+        """
+        csp = util.CSP()
+        self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
+        self.add_budget_constraints(csp)
+        return csp
