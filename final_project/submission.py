@@ -372,7 +372,6 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 10 # always keep this even!
-        self.restaraunts = activities['food'] # dict
         self.max_travel_time = 15 #mins
         self.home = activities['home'] #dict 
 
@@ -404,7 +403,6 @@ class SchedulingCSPConstructor():
                 a_latitude = a_latitude + delta
         
         activities_domain = list(self.activities.keys())
-        restaraunts_domain = list(self.restaraunts.keys())
         home_domain = list(self.home.keys())
         
         # slots (including the travel time)
@@ -413,7 +411,7 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, home_domain)
                 continue
             if i % 2 == 0:
-                csp.add_variable(i, activities_domain + restaraunts_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
+                csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
                 csp.add_variable(i, time_domain) # if a time slot is not assigned, it will be duration 0
