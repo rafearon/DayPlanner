@@ -399,7 +399,7 @@ class SchedulingCSPConstructor():
                         b_latitude = b_latitude + delta
                     a_longitude = a_longitude + delta
                 a_latitude = a_latitude + delta
-        home_domain = [{"cost": 0, "duration": 0, "longitude": user_long, "latitude": user_lat, "rating": 5, "is_food": 0}]
+        home_domain = [util.Activity(-1, {"name": "home", "coordinates": {"longitude": user_long, "latitude": user_lat}, "time_spent_minutes": 0, "rating": 5}, False)]
         
         # slots (including the travel time)
         for i in range(0, self.num_slots):
@@ -438,14 +438,14 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                print a
+                #print a
                 val = a.duration
             return b[1] == b[0] + val
 
         variables = []
         for i in range(0, self.num_slots):
-            if i%2 != 0:
-                variables.append(i)
+            #if i%2 != 0:
+            variables.append(i)
         
         result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
