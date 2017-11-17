@@ -399,12 +399,7 @@ class SchedulingCSPConstructor():
                         b_latitude = b_latitude + delta
                     a_longitude = a_longitude + delta
                 a_latitude = a_latitude + delta
-<<<<<<< HEAD
-        print "length of time domain is ", len(time_domain)
-        home_domain = [{"cost": 0, "duration": 0, "longitude": user_long, "latitude": user_lat, "rating": 5, "is_food": 0}]
-=======
         home_domain = [util.Activity(-1, {"name": "home", "coordinates": {"longitude": user_long, "latitude": user_lat}, "time_spent_minutes": 0, "rating": 5}, False)]
->>>>>>> b45336a6098b41915df7acf10e8021e3a356e8d7
         
         # slots (including the travel time)
         for i in range(0, self.num_slots):
@@ -443,10 +438,6 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-<<<<<<< HEAD
-=======
-                #print a
->>>>>>> b45336a6098b41915df7acf10e8021e3a356e8d7
                 val = a.duration
             return b[1] == b[0] + val
 
