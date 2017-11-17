@@ -180,6 +180,7 @@ class BacktrackingSearch():
 
         self.numOperations += 1
         assert weight > 0
+
         if numAssigned == self.csp.numVars:
             # A satisfiable solution have been found. Update the statistics.
             self.numAssignments += 1
