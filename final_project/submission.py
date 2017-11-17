@@ -322,9 +322,6 @@ class BacktrackingSearch():
         # END_YOUR_CODE
 
 
-############################################################
-# Problem 2b
-
 # importing get_or_variable helper function from util
 get_or_variable = util.get_or_variable
 
@@ -397,7 +394,7 @@ class SchedulingCSPConstructor():
                     while b_latitude < max_latitude:
                         b_longitude = min_longitude
                         while b_longitude < max_longitude:
-                            time_domain.append({"duration": x, "a_latitude": a_latitude, "a_longitude": a_longitude, "b_latitude": b_latitude, "b_longitude": b_longitude})
+                            time_domain.append(util.Time(x, a_latitude, a_longitude, b_latitude, b_longitude))
                             b_longitude = b_longitude + delta
                         b_latitude = b_latitude + delta
                     a_longitude = a_longitude + delta
@@ -413,7 +410,7 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, self.activities + self.restaraunts + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
-                csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
+                csp.add_variable(i, time_domain) # if a time slot is not assigned, it will be duration 0
         print "ending add variables"
     
     # budget: value of (i, "activity") summed up less than user budget
@@ -431,7 +428,6 @@ class SchedulingCSPConstructor():
             if i != 0 and i % 2 == 0:
                 variables.append(i)
 
-        print self.profile.budget
         result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.budget)
         print "ending add budget constraints"
@@ -442,12 +438,14 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = a['duration']
+                print a
+                val = a.duration
             return b[1] == b[0] + val
 
         variables = []
         for i in range(0, self.num_slots):
-            variables.append(i)
+            if i%2 != 0:
+                variables.append(i)
         
         result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
