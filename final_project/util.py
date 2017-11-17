@@ -18,6 +18,10 @@ class Time(object):
         self.b_latitude = b_latitude
         self.b_longitude = b_longitude
 
+    def __str__(self):
+        return ('Time{duration: %d, a_latitude: %f, a_longitude: %f, b_latitude: %f, b_longitude: %f}' %
+            (self.duration, self.a_latitude, self.a_longitude, self.b_latitude, self.b_longitude))
+
 # General code for representing a weighted CSP (Constraint Satisfaction Problem).
 # All variables are being referenced by their index instead of their original
 # names.
@@ -417,6 +421,28 @@ class Profile:
         print "Genre: %s" % self.genre
         print "Food: %s" % ('yes' if self.want_food else 'no')
         print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
+
+def print_all_scheduling_solutions(solutions, profile, ac):
+    if solutions is None: return
+    print "all solutions"
+    for s in solutions:
+        print_scheduling_solution(s, profile, ac)
+        print
+
+def print_scheduling_solution(solution, profile, ac):
+    if solution == None:
+        print "No schedule found that satisfied all the constraints."
+    activities = ac[profile.genre]
+    for key, value in solution.items():
+        if isinstance(key, (int, long)):
+            if key == 0:
+                print ac['home'][value]
+            elif key % 2 == 0:
+                print activities[value]
+            else:
+                print value
+        else:
+            print key, '=', value
 
 def extract_course_scheduling_solution(profile, assign):
     """

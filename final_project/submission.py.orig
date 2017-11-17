@@ -376,7 +376,7 @@ class SchedulingCSPConstructor():
     def __init__(self, activities, profile):
         self.activities = activities[profile.genre] # dict
         self.profile = profile
-        self.num_slots = 10 # always keep this even!
+        self.num_slots = 11 # always keep this odd!
         self.max_travel_time = 60 #mins
         self.home = activities['home'] #dict 
 
@@ -447,13 +447,13 @@ class SchedulingCSPConstructor():
             val = 0
             if a != None:
                 val = a.duration
-                # print val
             return b[1] == b[0] + val
 
         variables = []
         for i in range(0, self.num_slots):
             if i % 2 != 0: # not accounting for time of activity
                 variables.append(i)
+        
         result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
         print "ending time contraints"
@@ -468,7 +468,11 @@ class SchedulingCSPConstructor():
         variables = []
         for i in range(0, self.num_slots): # TODO: make this be n-squared
             if i % 2 == 0 and i + 2 < self.num_slots:
+<<<<<<< HEAD
                 csp.add_binary_factor(i, i + 2, factor)
+=======
+                csp.add_binary_factor(i, i +2, factor)
+>>>>>>> f4c5f61aa5c24a10613f35ceae4949d5a22bd2e4
 
         print "ending add_different_activity_constraints"
 
@@ -559,6 +563,6 @@ class SchedulingCSPConstructor():
         self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
         self.add_budget_constraints(csp)
         self.add_different_activity_constraints(csp)
-        # self.add_slot_travel_time_constraints(csp)
+        self.add_slot_travel_time_constraints(csp)
         self.add_time_constraints(csp)
         return csp
