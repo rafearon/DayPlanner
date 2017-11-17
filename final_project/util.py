@@ -305,6 +305,9 @@ class ActivityCollection:
         home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5}, False)
         self.activities['home'] = {-1: home}
 
+        # add restaurant dict to user's selected genre
+        self.activities[profile.genre].update(self.activities['food'])
+
     def load_activities(self, path, genre):
         with open(path, 'r') as activities:
             for a in activities:
