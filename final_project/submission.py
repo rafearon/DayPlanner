@@ -94,6 +94,9 @@ class BacktrackingSearch():
         # List of all solutions found.
         self.allAssignments = []
 
+        # List of all optimal solutions found
+        self.allOptimalAssignments = []
+
     def print_stats(self):
         """
         Prints a message summarizing the outcome of the solver.
@@ -197,8 +200,10 @@ class BacktrackingSearch():
             if len(self.optimalAssignment) == 0 or weight >= self.optimalWeight:
                 if weight == self.optimalWeight:
                     self.numOptimalAssignments += 1
+                    self.allOptimalAssignments.append(newAssignment)
                 else:
                     self.numOptimalAssignments = 1
+                    self.allOptimalAssignments = [newAssignment]
                 self.optimalWeight = weight
 
                 self.optimalAssignment = newAssignment

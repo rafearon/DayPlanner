@@ -424,7 +424,6 @@ class Profile:
 
 def print_all_scheduling_solutions(solutions, profile, ac):
     if solutions is None: return
-    print "all solutions"
     for s in solutions:
         print_scheduling_solution(s, profile, ac)
         print
