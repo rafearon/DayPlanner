@@ -3,6 +3,21 @@ from datetime import datetime
 from datetime import timedelta
 from enum import Enum
 
+
+class Time(object):
+    duration = 0
+    a_latitude = 0
+    a_longitude = 0
+    b_latitude = 0
+    b_longitude = 0
+
+    def __init__(self, duration, a_latitude, a_longitude, b_latitude, b_longitude):
+        self.duration = duration
+        self.a_latitude = a_latitude
+        self.a_longitude = a_longitude
+        self.b_latitude = b_latitude
+        self.b_longitude = b_longitude
+
 # General code for representing a weighted CSP (Constraint Satisfaction Problem).
 # All variables are being referenced by their index instead of their original
 # names.
@@ -104,9 +119,6 @@ class CSP:
             print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             raise
 
-        print var1, 'q'
-        print var2, 'r'
-        print self.values
         self.update_binary_factor_table(var1, var2,
             {val1: {val2: float(factor_func(val1, val2)) \
                 for val2 in self.values[var2]} for val1 in self.values[var1]})
