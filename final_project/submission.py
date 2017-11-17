@@ -465,10 +465,9 @@ class SchedulingCSPConstructor():
             if a == None or b == None: return 1
             return a != b
 
-        variables = []
-        for i in range(0, self.num_slots): # TODO: make this be n-squared
-            if i % 2 == 0 and i + 2 < self.num_slots:
-                csp.add_binary_factor(i, i +2, factor)
+        variables = [(i, j) for i in range(0, self.num_slots) for j in range(0, self.num_slots) if i != j and i % 2 == 0 and j % 2 == 0]
+        for i, j in variables:
+            csp.add_binary_factor(i, j, factor)
 
         print "ending add_different_activity_constraints"
 
