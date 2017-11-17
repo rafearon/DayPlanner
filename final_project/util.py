@@ -288,7 +288,7 @@ class Activity:
 
 # Information about all the activities
 class ActivityCollection:
-    def __init__(self, pathsByGenre):
+    def __init__(self, profile, pathsByGenre):
         """
         Initialize the collection of activities.
 
@@ -297,10 +297,13 @@ class ActivityCollection:
         @param activitiesPath: Path of a file containing all the restaurant information.
         """
         # Read activities
-        self.activities = dict((genre, []) for genre in pathsByGenre.keys())
+        self.activities = dict((genre, dict()) for genre in pathsByGenre.keys())
         self.cur_id = 0
         for genre, path in pathsByGenre.iteritems():
             self.load_activities(path, genre)
+        # add home domain
+        home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5}, False)
+        self.activities['home'] = {-1: home}
 
     def load_activities(self, path, genre):
         with open(path, 'r') as activities:
@@ -308,7 +311,7 @@ class ActivityCollection:
                 info = json.loads(a)
                 if not self.is_valid_activity(info): continue
                 activity = Activity(self.cur_id, info, genre == 'food')
-                self.activities[genre].append(activity)
+                self.activities[genre][activity.unique_id] = activity
                 self.cur_id += 1
 
     def is_valid_activity(self, info):
