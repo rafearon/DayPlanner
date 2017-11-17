@@ -6,6 +6,7 @@ if len(sys.argv) < 2:
 
 profilePath = sys.argv[1]
 genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
+#genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
 activities = util.ActivityCollection(genreToPath).activities
 profile = util.Profile(profilePath)
 profile.print_info()
