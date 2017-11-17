@@ -14,7 +14,7 @@ cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
 alg = submission.BacktrackingSearch()
-alg.solve(csp, mcv = True, ac3 = True)
+alg.solve(csp, mcv = True, ac3 = False)
 if alg.optimalAssignment:
     print alg.optimalWeight
     for key, value in alg.optimalAssignment.items():

@@ -6,7 +6,7 @@ end_time 10:00
 meals yes
 
 # budget
-budget 10
+budget 20
 
 # genre (thrill, indoors, and outdoors)
 genre thrill
