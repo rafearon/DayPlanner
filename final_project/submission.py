@@ -377,8 +377,10 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 10 # always keep this even!
-        self.max_travel_time = 60 #mins
+        self.max_travel_time = 15 #mins
         self.home = activities['home'] #dict 
+
+        print "max travel time is ", self.max_travel_time
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
@@ -491,7 +493,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = a.is_food
+                val = self.activities[a].is_food
             return b[1] == b[0] + val
 
         num_restaraunts = self.profile.want_food
@@ -544,7 +546,7 @@ class SchedulingCSPConstructor():
                 def factor(a):
                     if a is None:
                         return 1 # in order to promote having filled slots (this is the only place we explicitly promote filled slots)
-                    return a.rating
+                    return self.activities[a].rating
                 csp.add_unary_factor(i, factor)
         print "ending add travel time constaints"
 
@@ -558,6 +560,8 @@ class SchedulingCSPConstructor():
         self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
         self.add_budget_constraints(csp)
         self.add_different_activity_constraints(csp)
+        self.add_rating_constraints(csp)
+        self.add_food_constraints(csp)
         # self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
+        # self.add_time_constraints(csp)
         return csp

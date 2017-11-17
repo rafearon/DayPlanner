@@ -15,7 +15,7 @@ cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
 alg = submission.BacktrackingSearch()
-alg.solve(csp, mcv = False, ac3 = False, max_num_assignments = 10)
+alg.solve(csp, mcv = True, ac3 = True, max_num_assignments = 10)
 util.print_all_scheduling_solutions(alg.allAssignments, profile, activities)
 
 print "optimal solution"
