@@ -536,5 +536,5 @@ class SchedulingCSPConstructor():
         csp = util.CSP()
         self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
         self.add_budget_constraints(csp)
-        self.add_time_constraints(csp)
+        #self.add_time_constraints(csp)
         return csp
