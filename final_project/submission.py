@@ -462,8 +462,8 @@ class SchedulingCSPConstructor():
 
         variables = []
         for i in range(0, self.num_slots): # TODO: make this be n-squared
-            if i % 2 == 0 and i + 2 <= self.num_slots:
-                csp.add_binary_factor(i, i +1, factor)
+            if i % 2 == 0 and i + 2 < self.num_slots:
+                csp.add_binary_factor(i, i +2, factor)
 
         print "ending add_different_activity_constraints"
 
