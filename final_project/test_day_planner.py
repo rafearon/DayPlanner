@@ -5,17 +5,18 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 profilePath = sys.argv[1]
-genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
-#genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
+# genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
+genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
 activities = util.ActivityCollection(genreToPath).activities
 profile = util.Profile(profilePath)
 profile.print_info()
 cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
-
 alg = submission.BacktrackingSearch()
-alg.solve(csp, mcv = True, ac3 = True)
+print "starting backtracking search"
+alg.solve(csp, mcv = False, ac3 = False)
+print "solved backtracking search"
 if alg.optimalAssignment:
     print alg.optimalWeight
     for key, value in alg.optimalAssignment.items():

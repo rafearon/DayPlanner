@@ -158,8 +158,10 @@ class BacktrackingSearch():
         # The dictionary of domains of every variable in the CSP.
         self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
 
+        print "starting backtrack"
         # Perform backtracking search.
         self.backtrack({}, 0, 1)
+        print "ending backtrack"
         # Print summary of solutions.
         self.print_stats()
 
@@ -367,11 +369,12 @@ def get_sum_variable(csp, name, variables, maxSum, factor):
 class SchedulingCSPConstructor():
 
     def __init__(self, activities, profile):
-        self.activities = activities[profile.genre]
+        self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 10 # always keep this even!
-        self.restaraunts = activities['food']
+        self.restaraunts = activities['food'] # dict
         self.max_travel_time = 15 #mins
+        self.home = activities['home'] #dict 
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
@@ -399,7 +402,10 @@ class SchedulingCSPConstructor():
                         b_latitude = b_latitude + delta
                     a_longitude = a_longitude + delta
                 a_latitude = a_latitude + delta
-        home_domain = [util.Activity(-1, {"name": "home", "coordinates": {"longitude": user_long, "latitude": user_lat}, "time_spent_minutes": 0, "rating": 5}, False)]
+        
+        activities_domain = list(self.activities.keys())
+        restaraunts_domain = list(self.restaraunts.keys())
+        home_domain = list(self.home.keys())
         
         # slots (including the travel time)
         for i in range(0, self.num_slots):
@@ -407,7 +413,7 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, home_domain)
                 continue
             if i % 2 == 0:
-                csp.add_variable(i, self.activities + self.restaraunts + [None]) # if an activity/restaraunt slot is not assigned, it will be None
+                csp.add_variable(i, activities_domain + restaraunts_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
                 csp.add_variable(i, time_domain) # if a time slot is not assigned, it will be duration 0
@@ -419,7 +425,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = a.cost
+                val = self.activities[a].cost
             return b[1] == b[0] + val
 
 
@@ -443,7 +449,6 @@ class SchedulingCSPConstructor():
 
         variables = []
         for i in range(0, self.num_slots):
-            #if i%2 != 0:
             variables.append(i)
         
         result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
@@ -536,5 +541,5 @@ class SchedulingCSPConstructor():
         csp = util.CSP()
         self.add_variables(csp, self.profile.user_latitude, self.profile.user_longitude)
         self.add_budget_constraints(csp)
-        self.add_time_constraints(csp)
+        # self.add_time_constraints(csp)
         return csp
