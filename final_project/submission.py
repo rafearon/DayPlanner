@@ -1,4 +1,4 @@
-import collections, util, copy
+import collections, util, copy, math
 
 import geopy.distance
 
@@ -555,6 +555,22 @@ class SchedulingCSPConstructor():
                 csp.add_unary_factor(i, factor)
         print "ending add travel time constaints"
 
+    def add_review_count_constraints(self, csp):
+        print "starting add review count constraints"
+        for i in range(1, self.num_slots):
+            if i % 2 == 0:
+                def factor(a):
+                    if a is None:
+                        return 1
+                    num_reviews = self.activities[a].review_count
+                    if num_reviews == 0:
+                        return .5
+                    # Return log base 10 of number of reviews
+                    # TODO: look into playing around with this normalization factor
+                    return math.log(num_reviews, 10) + 1
+                csp.add_unary_factor(i, factor)
+        print "ending add review count constraints"
+
     def get_basic_csp(self):
         """
         Return a CSP that only enforces the basic budget constraints
@@ -567,6 +583,7 @@ class SchedulingCSPConstructor():
         self.add_different_activity_constraints(csp)
         self.add_rating_constraints(csp)
         self.add_food_constraints(csp)
+        self.add_review_count_constraints(csp)
         # self.add_slot_travel_time_constraints(csp)
         # self.add_time_constraints(csp)
         return csp
