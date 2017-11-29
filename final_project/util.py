@@ -6,17 +6,17 @@ from enum import Enum
 
 class Time(object):
     duration = 0
-    a_latitude = 0
-    a_longitude = 0
-    b_latitude = 0
-    b_longitude = 0
+    # a_latitude = 0
+    # a_longitude = 0
+    # b_latitude = 0
+    # b_longitude = 0
 
     def __init__(self, duration, a_latitude, a_longitude, b_latitude, b_longitude):
         self.duration = duration
-        self.a_latitude = a_latitude
-        self.a_longitude = a_longitude
-        self.b_latitude = b_latitude
-        self.b_longitude = b_longitude
+        # self.a_latitude = a_latitude
+        # self.a_longitude = a_longitude
+        # self.b_latitude = b_latitude
+        # self.b_longitude = b_longitude
 
     def __str__(self):
         return ('Time{duration: %d, a_latitude: %f, a_longitude: %f, b_latitude: %f, b_longitude: %f}' %
@@ -63,6 +63,8 @@ class CSP:
 
         self.binaryFactors = {}
 
+        # self.ternaryFactors = {}
+
     def add_variable(self, var, domain):
         """
         Add a new variable to the CSP.
@@ -75,6 +77,7 @@ class CSP:
         self.values[var] = domain
         self.unaryFactors[var] = None
         self.binaryFactors[var] = dict()
+        # self.ternaryFactors[var] = dict()
 
 
     def get_neighbor_vars(self, var):
@@ -93,6 +96,7 @@ class CSP:
         value |val|?
         => csp.unaryFactors[var][val]
         """
+        # for everything in the domain, this creates a map from domain value to function output
         factor = {val:float(factorFunc(val)) for val in self.values[var]}
         if self.unaryFactors[var] is not None:
             assert len(self.unaryFactors[var]) == len(factor)
@@ -435,7 +439,9 @@ def print_scheduling_solution(solution, profile, ac):
     activities = ac[profile.genre]
     for key, value in solution.items():
         if isinstance(key, (int, long)):
-            if key == 0:
+            if value == None:
+                print "no activity for this slot"
+            elif value == -1:
                 print ac['home'][value]
             elif key % 2 == 0:
                 print activities[value]

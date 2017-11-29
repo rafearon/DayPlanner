@@ -393,21 +393,21 @@ class SchedulingCSPConstructor():
         # if we make this delta smaller, it might crash!
         delta = 1
 
-        time_domain = []
-        for x in range(0, self.max_travel_time + 1):
-            a_latitude = min_latitude
-            while a_latitude < max_latitude:
-                a_longitude = min_longitude
-                while a_longitude < max_longitude:
-                    b_latitude = min_latitude
-                    while b_latitude < max_latitude:
-                        b_longitude = min_longitude
-                        while b_longitude < max_longitude:
-                            time_domain.append(util.Time(x, a_latitude, a_longitude, b_latitude, b_longitude))
-                            b_longitude = b_longitude + delta
-                        b_latitude = b_latitude + delta
-                    a_longitude = a_longitude + delta
-                a_latitude = a_latitude + delta
+        # time_domain = []
+        # for x in range(0, self.max_travel_time + 1):
+        #     a_latitude = min_latitude
+        #     while a_latitude < max_latitude:
+        #         a_longitude = min_longitude
+        #         while a_longitude < max_longitude:
+        #             b_latitude = min_latitude
+        #             while b_latitude < max_latitude:
+        #                 b_longitude = min_longitude
+        #                 while b_longitude < max_longitude:
+        #                     time_domain.append(util.Time(x, a_latitude, a_longitude, b_latitude, b_longitude))
+        #                     b_longitude = b_longitude + delta
+        #                 b_latitude = b_latitude + delta
+        #             a_longitude = a_longitude + delta
+        #         a_latitude = a_latitude + delta
         
         activities_domain = list(self.activities.keys())
         home_domain = list(self.home.keys())
@@ -421,7 +421,8 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
-                csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
+                # csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
+                csp.add_variable(i, [None])
         print "ending add variables"
     
     # budget: value of (i, "activity") summed up less than user budget
@@ -448,13 +449,12 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = a.duration
-                # print val
+                val = self.activities[a].duration
             return b[1] == b[0] + val
 
         variables = []
         for i in range(0, self.num_slots):
-            if i % 2 != 0: # not accounting for time of activity
+            if i % 2 == 0 and i != 0: # not accounting for time of travel
                 variables.append(i)
         result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
         csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
@@ -563,5 +563,6 @@ class SchedulingCSPConstructor():
         self.add_rating_constraints(csp)
         self.add_food_constraints(csp)
         # self.add_slot_travel_time_constraints(csp)
-        # self.add_time_constraints(csp)
+        self.add_time_constraints(csp)
+        # self.add_weighted_travel_time_constraints(csp)
         return csp
