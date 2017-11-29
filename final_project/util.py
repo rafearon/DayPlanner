@@ -271,6 +271,7 @@ def get_or_variable(csp, name, variables, value):
 # self.rating: int from 1 to 5
 # self.duration: in minutes
 # self.cost: in dollars (expecting one number)
+# self.review_count: number of reviews
 # self.is_food: 1 if restaurant else 0
 class Activity:
     def __init__(self, unique_id, info, is_restaurant):
@@ -281,13 +282,14 @@ class Activity:
         self.rating = float(info['rating'])
         self.duration = int(info['time_spent_minutes'])
         self.cost = Price[info['price'].replace("$", "m")].value if 'price' in info else 0
+        self.review_count = int(info['review_count'])
         self.is_food = is_restaurant
 
     def short_str(self): return self.name
 
     def __str__(self):
-        return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, is_food: %d}' % 
-            (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.is_food))
+        return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, review_count: %d is_food: %d}' %
+            (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.review_count, self.is_food))
 
 
 # Information about all the activities
@@ -306,7 +308,7 @@ class ActivityCollection:
         for genre, path in pathsByGenre.iteritems():
             self.load_activities(path, genre)
         # add home domain
-        home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5}, False)
+        home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5, "review_count": 0}, False)
         self.activities['home'] = {-1: home}
 
         # add restaurant dict to user's selected genre
@@ -434,7 +436,7 @@ def print_scheduling_solution(solution, profile, ac):
     activities = ac[profile.genre]
     for key, value in solution.items():
         if isinstance(key, (int, long)):
-            if key == 0:
+            if value == -1:
                 print ac['home'][value]
             elif key % 2 == 0:
                 print activities[value]
