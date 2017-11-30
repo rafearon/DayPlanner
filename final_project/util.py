@@ -146,6 +146,7 @@ class CSP:
                     assert i in currentTable and j in currentTable[i]
                     currentTable[i][j] *= table[i][j]
 
+
 ############################################################
 # CSP examples.
 
@@ -439,7 +440,10 @@ def print_scheduling_solution(solution, profile, ac):
             if value == -1:
                 print ac['home'][value]
             elif key % 2 == 0:
-                print activities[value]
+                if value == None:
+                    print "No activity"
+                else:
+                    print activities[value]
             else:
                 print value
         else:
