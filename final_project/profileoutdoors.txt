@@ -1,0 +1,16 @@
+# Start and end time
+start_time 12:00
+end_time 18:00
+
+# meals (yes or no)
+meals yes
+
+# budget
+budget 30
+
+# genre (thrill, indoors, and outdoors)
+genre thrill
+
+# start location (long and lat)
+latitude 37.42358
+longitude -122.170733
