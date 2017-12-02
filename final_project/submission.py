@@ -187,7 +187,6 @@ class BeamSearch():
             extended = self.extend_assignments(assignments, var)
             assignments = self.prune_assignments(extended)
             num_assigned += 1
-            print "num vars assigned %d out of %d" % (num_assigned, self.csp.numVars)
 
         self.allAssignments = [a for a, w in assignments]
 
@@ -210,9 +209,6 @@ class BeamSearch():
                     newWeight = weight * deltaWeight
                     extended_assignments.append((newAssignment, newWeight))
 
-        if len(extended_assignments) == 0:
-            for a, w in assignments:
-                print a, w
         return extended_assignments
 
     def prune_assignments(self, assignments):
@@ -220,7 +216,7 @@ class BeamSearch():
         Returns the k assignments with the highest weights
         """
         # Sort assignments by weight
-        assignments.sort(key=lambda (assignment, weight): weight)
+        assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
         # Return top k assignments
         return assignments[:self.k]
 
@@ -231,83 +227,21 @@ class BeamSearch():
         ordered_vars.extend([('sum', 'food', 'aggregated'),
             ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
             ('sum', 'food', 3)])
-        # activity vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # budget vars
         ordered_vars.extend([
-            ('sum', 'budget', 0), ('sum', 'budget', 1), ('sum', 'budget', 2),
-            ('sum', 'budget', 3), ('sum', 'budget', 'aggregated')])
+            ('sum', 'budget', 0),
+            ('sum', 'budget', 1),
+            ('sum', 'budget', 2),
+            ('sum', 'budget', 3),
+            ('sum', 'budget', 'aggregated')])
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 
+        print "assigning variables in beam search in this order:"
+        print ordered_vars
         return ordered_vars
-
-    def get_unassigned_variable(self, assignment):
-        """
-        Given a partial assignment, return a currently unassigned variable.
-
-        @param assignment: A dictionary of current assignment. This is the same as
-            what you've seen so far.
-
-        @return var: a currently unassigned variable.
-        """
-
-        if not self.mcv:
-            # First assign the activity variables
-            for var in self.csp.variables:
-                if (var not in assignment and 
-                    isinstance(var, (int, long)) and 
-                    var % 2 == 0): return var
-            for var in self.csp.variables:
-                if var not in assignment: return var
-            # END_YOUR_CODE
-
-    def arc_consistency_check(self, var):
-        """
-        Perform the AC-3 algorithm. The goal is to reduce the size of the
-        domain values for the unassigned variables based on arc consistency.
-
-        @param var: The variable whose value has just been set.
-        """
-        # Problem 1c
-        # Hint: How to get variables neighboring variable |var|?
-        # => for var2 in self.csp.get_neighbor_vars(var):
-        #       # use var2
-        #
-        # Hint: How to check if a value or two values are inconsistent?
-        # - For unary factors
-        #   => self.csp.unaryFactors[var1][val1] == 0
-        #
-        # - For binary factors
-        #   => self.csp.binaryFactors[var1][var2][val1][val2] == 0
-        #   (self.csp.binaryFactors[var1][var2] returns a nested dict of all assignments)
-
-        # BEGIN_YOUR_CODE (our solution is 20 lines of code, but don't worry if you deviate from this)
-        variables = [var]
-        while len(variables) > 0:
-            var1 = variables.pop(0)
-            for var2 in self.csp.get_neighbor_vars(var1):
-                remove_vals = []
-                for val2 in self.domains[var2]:
-                    should_remove = 1
-                    for val1 in self.domains[var1]:
-                        if self.csp.binaryFactors[var1][var2][val1][val2] != 0:
-                            should_remove = 0
-                    if should_remove == 1:
-                        remove_vals.append(val2)
-                curr_domain = self.domains[var2]
-                new_domain = []
-                pruned_domain = 0
-                for val in curr_domain:
-                    if val not in remove_vals:
-                        new_domain.append(val)
-                    else:
-                        pruned_domain = 1
-                self.domains[var2] = new_domain
-                if pruned_domain:
-                    # add all of its neighbors
-                    variables.append(var2)
-        # END_YOUR_CODE
 
 # A backtracking algorithm that solves weighted CSP.
 # Usage:
@@ -673,6 +607,7 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
+                #pass
                 csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
         print "ending add variables"
     
@@ -834,4 +769,3 @@ class SchedulingCSPConstructor():
         # self.add_slot_travel_time_constraints(csp)
         # self.add_time_constraints(csp)
         return csp
-
