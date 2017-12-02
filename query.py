@@ -364,7 +364,9 @@ def main():
                 output_set.add(business)
         with open(genre+".json", "a") as out:
             for item in output_set:
-                out.write(item)
+                itemDict = json.loads(item)
+                itemDict['genre'] = genre
+                out.write(json.dumps(item))
                 out.write("\n")
 
     

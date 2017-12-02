@@ -1,4 +1,4 @@
-import collections, util, copy, math
+import collections, util, copy, math, random, sys
 
 import geopy.distance
 
@@ -61,6 +61,264 @@ def create_nqueens_csp(n = 8):
                 csp.add_binary_factor(i, j, lambda x, y : (x-y) != 0 and (abs(x-y)) != abs(i-j))
     # END_YOUR_CODE
     return csp
+
+
+
+class ICRSearch():
+
+
+    def reset_results(self):
+        """
+        This function resets the statistics of the different aspects of the
+        CSP solver. We will be using the values here for grading, so please
+        do not make any modification to these variables.
+        """
+        # Keep track of the best assignment and weight found.
+        self.optimalAssignment = {}
+        self.optimalWeight = 0
+
+        # Keep track of the number of optimal assignments and assignments. These
+        # two values should be identical when the CSP is unweighted or only has binary
+        # weights.
+        self.numOptimalAssignments = 0
+        self.numAssignments = 0
+
+        # Keep track of the number of times backtrack() gets called.
+        self.numOperations = 0
+
+        # Keep track of the number of operations to get to the very first successful
+        # assignment (doesn't have to be optimal).
+        self.firstAssignmentNumOperations = 0
+
+        # List of all solutions found.
+        self.allAssignments = []
+
+        # List of all optimal solutions found
+        self.allOptimalAssignments = []
+        self.previousWeight = 0
+
+    def print_stats(self):
+        """
+        Prints a message summarizing the outcome of the solver.
+        """
+        if self.optimalAssignment:
+            print "Found %d optimal assignments with weight %f in %d operations" % \
+                (self.numOptimalAssignments, self.optimalWeight, self.numOperations)
+            print "First assignment took %d operations" % self.firstAssignmentNumOperations
+        else:
+            print "No solution was found."
+
+    def get_delta_weight(self, assignment, var, val):
+        """
+        Given a CSP, a partial assignment, and a proposed new value for a variable,
+        return the change of weights after assigning the variable with the proposed
+        value.
+
+        @param assignment: A dictionary of current assignment. Unassigned variables
+            do not have entries, while an assigned variable has the assigned value
+            as value in dictionary. e.g. if the domain of the variable A is [5,6],
+            and 6 was assigned to it, then assignment[A] == 6.
+        @param var: name of an unassigned variable.
+        @param val: the proposed value.
+
+        @return w: Change in weights as a result of the proposed assignment. This
+            will be used as a multiplier on the current weight.
+        """
+        assert var not in assignment
+        w = 1.0
+        if self.csp.unaryFactors[var]:
+            w *= self.csp.unaryFactors[var][val]
+            if w == 0: return w
+        for var2, factor in self.csp.binaryFactors[var].iteritems():
+            if var2 not in assignment: continue  # Not assigned yet
+            w *= factor[val][assignment[var2]]
+            if w == 0: return w
+        return w
+
+    def solve(self, csp, mcv = False, ac3 = False, num_assignments = 10):
+        """
+        Solves the given weighted CSP using heuristics as specified in the
+        parameter. Note that unlike a typical unweighted CSP where the search
+        terminates when one solution is found, we want this function to find
+        all possible assignments. The results are stored in the variables
+        described in reset_result().
+
+        @param csp: A weighted CSP.
+        @param mcv: When enabled, Most Constrained Variable heuristics is used.
+        @param ac3: When enabled, AC-3 will be used after each assignment of an
+            variable is made.
+        """
+        # CSP to be solved.
+        self.csp = csp
+
+        # Set the search heuristics requested asked.
+        self.mcv = mcv
+        self.ac3 = ac3
+
+        # Reset solutions from previous search.
+        self.reset_results()
+
+        # The dictionary of domains of every variable in the CSP.
+        self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
+
+        # Set maximum number of assignments
+        self.num_assignments = num_assignments
+
+        print "starting ICR"
+        # Perform backtracking search.
+       
+        for i in range (0, self.num_assignments):
+            print "Starting ICR candidate ", i
+            self.cutoff = 30
+            self.curr_weight = 1.0
+            self.icr_iterations = 0
+            self.prev_weight = -1.0
+            self.icr_iterations = 0
+            startAssignment = self.icr_init()
+            while(self.icr_iterations < self.cutoff) and format(self.curr_weight, '.5f') != format(self.prev_weight, '.5f'):
+                print "Round", self.icr_iterations
+                self.icr(startAssignment)
+                self.icr_iterations += 1
+            self.allAssignments.append(startAssignment)
+            print "TOTAL WEIGHT OF ASSIGNMENT ", i , " = ", self.curr_weight
+
+        print "ending ICR"
+        # Print summary of solutions.
+        self.print_stats()
+
+
+    def icr_init(self):
+        newAssignment = {}
+        start_weight = 1
+        for var_idx, var in enumerate(self.csp.variables):
+                ordered_values = self.domains[var]
+                success = False
+                for tries in range(0,800):
+                    val = random.choice(ordered_values)
+                    delta_weight = self.get_delta_weight(newAssignment, var, val)
+                    #print delta_weight
+                    if delta_weight >= 0:
+                        newAssignment[var] = val
+                        if delta_weight == 0:
+                            delta_weight = 1
+                        start_weight *= delta_weight
+                        success = True
+                        break
+                if not success:
+                    newAssignment[var] = None
+        #print newAssignment
+        self.curr_weight = start_weight
+        return newAssignment
+
+
+    def icr(self, assignment):
+        for var in assignment:
+            ordered_values = self.domains[var]
+            for val in ordered_values:
+                assignCopy = copy.copy(assignment)
+                del assignCopy[var]
+                deltaWeight = self.get_delta_weight(assignCopy, var, val)
+                #print deltaWeight
+                if deltaWeight > 0:
+                    assignment[var] = val
+                    self.prev_weight = self.curr_weight
+                    self.curr_weight *= deltaWeight
+
+
+
+
+        
+
+
+
+
+    def get_unassigned_variable(self, assignment):
+        """
+        Given a partial assignment, return a currently unassigned variable.
+
+        @param assignment: A dictionary of current assignment. This is the same as
+            what you've seen so far.
+
+        @return var: a currently unassigned variable.
+        """
+
+        if not self.mcv:
+            # Select a variable without any heuristics.
+            for var in self.csp.variables:
+                if var not in assignment: return var
+        else:
+            # Problem 1b
+            # Heuristic: most constrained variable (MCV)
+            # Select a variable with the least number of remaining domain values.
+            # Hint: given var, self.domains[var] gives you all the possible values
+            # Hint: get_delta_weight gives the change in weights given a partial
+            #       assignment, a variable, and a proposed value to this variable
+            # Hint: for ties, choose the variable with lowest index in self.csp.variables
+            # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
+            min_num = float("inf")
+            min_var = self.csp.variables[0]
+            num = 0
+            for var in self.csp.variables:
+                num = 0
+                if var not in assignment:
+                    values = self.domains[var]
+                    for value in values:
+                        if self.get_delta_weight(assignment, var, value) != 0:
+                            num = num+1
+                    if num < min_num:
+                        min_num = num
+                        min_var = var
+            return min_var
+            # END_YOUR_CODE
+
+    def arc_consistency_check(self, var):
+        """
+        Perform the AC-3 algorithm. The goal is to reduce the size of the
+        domain values for the unassigned variables based on arc consistency.
+
+        @param var: The variable whose value has just been set.
+        """
+        # Problem 1c
+        # Hint: How to get variables neighboring variable |var|?
+        # => for var2 in self.csp.get_neighbor_vars(var):
+        #       # use var2
+        #
+        # Hint: How to check if a value or two values are inconsistent?
+        # - For unary factors
+        #   => self.csp.unaryFactors[var1][val1] == 0
+        #
+        # - For binary factors
+        #   => self.csp.binaryFactors[var1][var2][val1][val2] == 0
+        #   (self.csp.binaryFactors[var1][var2] returns a nested dict of all assignments)
+
+        # BEGIN_YOUR_CODE (our solution is 20 lines of code, but don't worry if you deviate from this)
+        variables = [var]
+        while len(variables) > 0:
+            var1 = variables.pop(0)
+            for var2 in self.csp.get_neighbor_vars(var1):
+                remove_vals = []
+                for val2 in self.domains[var2]:
+                    should_remove = 1
+                    for val1 in self.domains[var1]:
+                        if self.csp.binaryFactors[var1][var2][val1][val2] != 0:
+                            should_remove = 0
+                    if should_remove == 1:
+                        remove_vals.append(val2)
+                curr_domain = self.domains[var2]
+                new_domain = []
+                pruned_domain = 0
+                for val in curr_domain:
+                    if val not in remove_vals:
+                        new_domain.append(val)
+                    else:
+                        pruned_domain = 1
+                self.domains[var2] = new_domain
+                if pruned_domain:
+                    # add all of its neighbors
+                    variables.append(var2)
+
+
+
 
 class BeamSearch():
     def reset_results(self):
@@ -169,6 +427,8 @@ class BeamSearch():
         # Print summary of solutions.
         #self.print_stats()
 
+
+
     def beamsearch(self):
         """
         Perform beam search to find k possible solutions to
@@ -186,6 +446,8 @@ class BeamSearch():
         for var in self.get_ordered_vars():
             extended = self.extend_assignments(assignments, var)
             assignments = self.prune_assignments(extended)
+            #print extended
+            #print assignments
             num_assigned += 1
             print "num vars assigned %d out of %d" % (num_assigned, self.csp.numVars)
 
@@ -205,7 +467,8 @@ class BeamSearch():
                 deltaWeight = self.get_delta_weight(assignment, var, val)
                 if deltaWeight > 0:
                     # Copy assignment with new var, val pair into extended assignments
-                    newAssignment = assignment.copy()
+                    #print "dw > 0"
+                    newAssignment = copy.deepcopy(assignment)
                     newAssignment[var] = val
                     newWeight = weight * deltaWeight
                     extended_assignments.append((newAssignment, newWeight))
@@ -220,9 +483,15 @@ class BeamSearch():
         Returns the k assignments with the highest weights
         """
         # Sort assignments by weight
+        #print len(assignments)
+
         assignments.sort(key=lambda (assignment, weight): weight)
+        #print assignments
         # Return top k assignments
-        return assignments[:self.k]
+        #print len(assignments)
+        new_assignments = assignments[:self.k]
+        return new_assignments
+
 
     def get_ordered_vars(self):
         num_slots = 10
@@ -629,7 +898,7 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 10 # always keep this even!
-        self.max_travel_time = 15 #mins
+        self.max_travel_time = 60 #mins
         self.home = activities['home'] #dict 
 
         print "max travel time is ", self.max_travel_time

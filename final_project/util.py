@@ -1,4 +1,4 @@
-import json, re
+import json, re, random
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
@@ -316,13 +316,22 @@ class ActivityCollection:
         self.activities[profile.genre].update(self.activities['food'])
 
     def load_activities(self, path, genre):
+        lines = None
+        tokens = None
         with open(path, 'r') as activities:
+            lines = sum(1 for _ in activities)
+            tokens = random.sample(xrange(lines), min(800, lines))
+        with open(path, 'r') as activities:
+            a_linecount = 0
             for a in activities:
-                info = json.loads(a)
-                if not self.is_valid_activity(info): continue
-                activity = Activity(self.cur_id, info, genre == 'food')
-                self.activities[genre][activity.unique_id] = activity
-                self.cur_id += 1
+                if a_linecount in tokens:
+                    info = json.loads(a)
+                    if not self.is_valid_activity(info): continue
+                    activity = Activity(self.cur_id, info, genre == 'food')
+                    self.activities[genre][activity.unique_id] = activity
+                    self.cur_id += 1
+                a_linecount += 1
+
 
     def is_valid_activity(self, info):
         return not (info['coordinates']['latitude'] is None or
