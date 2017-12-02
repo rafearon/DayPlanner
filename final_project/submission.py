@@ -2,7 +2,7 @@ import collections, util, copy, math
 
 import geopy.distance
 
-time_per_mile = 2 # minutes
+time_per_mile = 1 # minutes
 
 import collections, util, copy
 
@@ -82,6 +82,187 @@ def create_nqueens_csp(n = 8):
                 csp.add_binary_factor(i, j, lambda x, y : (x-y) != 0 and (abs(x-y)) != abs(i-j))
     # END_YOUR_CODE
     return csp
+
+class BeamSearch():
+    def reset_results(self):
+        """
+        This function resets the statistics of the different aspects of the
+        CSP solver. We will be using the values here for grading, so please
+        do not make any modification to these variables.
+        """
+        # Keep track of the best assignment and weight found.
+        self.optimalAssignment = {}
+        self.optimalWeight = 0
+
+        # Keep track of the number of optimal assignments and assignments. These
+        # two values should be identical when the CSP is unweighted or only has binary
+        # weights.
+        self.numOptimalAssignments = 0
+        self.numAssignments = 0
+
+        # Keep track of the number of times backtrack() gets called.
+        self.numOperations = 0
+
+        # Keep track of the number of operations to get to the very first successful
+        # assignment (doesn't have to be optimal).
+        self.firstAssignmentNumOperations = 0
+
+        # List of all solutions found.
+        self.allAssignments = []
+
+        # List of all optimal solutions found
+        self.allOptimalAssignments = []
+
+        # List of k partial assignments
+        self.kAssignments = []
+
+    def print_stats(self):
+        """
+        Prints a message summarizing the outcome of the solver.
+        """
+        if self.optimalAssignment:
+            print "Found %d optimal assignments with weight %f in %d operations" % \
+                (self.numOptimalAssignments, self.optimalWeight, self.numOperations)
+            print "First assignment took %d operations" % self.firstAssignmentNumOperations
+        else:
+            print "No solution was found."
+
+    def get_delta_weight(self, assignment, var, val):
+        """
+        Given a CSP, a partial assignment, and a proposed new value for a variable,
+        return the change of weights after assigning the variable with the proposed
+        value.
+
+        @param assignment: A dictionary of current assignment. Unassigned variables
+            do not have entries, while an assigned variable has the assigned value
+            as value in dictionary. e.g. if the domain of the variable A is [5,6],
+            and 6 was assigned to it, then assignment[A] == 6.
+        @param var: name of an unassigned variable.
+        @param val: the proposed value.
+
+        @return w: Change in weights as a result of the proposed assignment. This
+            will be used as a multiplier on the current weight.
+        """
+        assert var not in assignment
+        w = 1.0
+        if self.csp.unaryFactors[var]:
+            w *= self.csp.unaryFactors[var][val]
+            if w == 0: return w
+        for var2, factor in self.csp.binaryFactors[var].iteritems():
+            if var2 not in assignment: continue  # Not assigned yet
+            w *= factor[val][assignment[var2]]
+            if w == 0: return w
+        return w
+
+    def solve(self, csp, mcv = False, ac3 = False, k = 10):
+        """
+        Solves the given weighted CSP using heuristics as specified in the
+        parameter. Note that unlike a typical unweighted CSP where the search
+        terminates when one solution is found, we want this function to find
+        all possible assignments. The results are stored in the variables
+        described in reset_result().
+
+        @param csp: A weighted CSP.
+        @param mcv: When enabled, Most Constrained Variable heuristics is used.
+        @param ac3: When enabled, AC-3 will be used after each assignment of an
+            variable is made.
+        """
+        # CSP to be solved.
+        self.csp = csp
+
+        # Set the search heuristics requested asked.
+        self.mcv = mcv
+        self.ac3 = ac3
+
+        # Reset solutions from previous search.
+        self.reset_results()
+
+        # The dictionary of domains of every variable in the CSP.
+        self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
+
+        # Set number of candidate assignments to store at any one time
+        self.k = k
+
+        print "starting beamsearch"
+        # Perform backtracking search.
+        self.beamsearch()
+        print "ending beamsearch"
+        # Print summary of solutions.
+        #self.print_stats()
+
+    def beamsearch(self):
+        """
+        Perform beam search to find k possible solutions to
+        the CSP.
+        """
+
+        self.numOperations += 1
+
+        # Init with empty assignments of weight 1
+        assignments = [({}, 1)]
+
+        # Number of variables currently assigned
+        num_assigned = 0
+
+        for var in self.get_ordered_vars():
+            extended = self.extend_assignments(assignments, var)
+            assignments = self.prune_assignments(extended)
+            num_assigned += 1
+
+        self.allAssignments = [a for a, w in assignments]
+
+    def extend_assignments(self, assignments, var):
+        """
+        Extends the partial assignments passed in by choosing an unassigned
+        variable and returning all possible partial assignments with that
+        chosen variable assigned
+        """
+        ordered_values = self.domains[var]
+        extended_assignments = [] # list of tuples of the form (assignment, weight)
+
+        for assignment, weight in assignments:
+            for val in ordered_values:
+                deltaWeight = self.get_delta_weight(assignment, var, val)
+                if deltaWeight > 0:
+                    # Copy assignment with new var, val pair into extended assignments
+                    newAssignment = assignment.copy()
+                    newAssignment[var] = val
+                    newWeight = weight * deltaWeight
+                    extended_assignments.append((newAssignment, newWeight))
+
+        return extended_assignments
+
+    def prune_assignments(self, assignments):
+        """
+        Returns the k assignments with the highest weights
+        """
+        # Sort assignments by weight
+        assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
+        # Return top k assignments
+        return assignments[:self.k]
+
+    def get_ordered_vars(self):
+        num_slots = 11
+        ordered_vars = []
+        # food variables
+        ordered_vars.extend([('sum', 'food', 'aggregated'),
+            ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
+            ('sum', 'food', 3)])
+        # budget vars
+        ordered_vars.extend([
+            ('sum', 'budget', 0),
+            ('sum', 'budget', 1),
+            ('sum', 'budget', 2),
+            ('sum', 'budget', 3),
+            ('sum', 'budget', 'aggregated')])
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+        # time vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
+
+        print "assigning variables in beam search in this order:"
+        print ordered_vars
+        return ordered_vars
 
 # A backtracking algorithm that solves weighted CSP.
 # Usage:
@@ -409,7 +590,7 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 11 # always keep this odd!
-        self.max_travel_time = 15 #mins
+        self.max_travel_time = 30 #mins
         self.home = activities['home'] #dict 
 
         print "max travel time is ", self.max_travel_time
@@ -557,6 +738,7 @@ class SchedulingCSPConstructor():
                         return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                     else:
                         return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
 
