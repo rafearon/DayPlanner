@@ -63,7 +63,7 @@ class CSP:
 
         self.binaryFactors = {}
 
-        # self.ternaryFactors = {}
+        self.ternaryFactors = {}
 
     def add_variable(self, var, domain):
         """
@@ -77,14 +77,52 @@ class CSP:
         self.values[var] = domain
         self.unaryFactors[var] = None
         self.binaryFactors[var] = dict()
-        # self.ternaryFactors[var] = dict()
-
+        self.ternaryFactors[var] = dict()
 
     def get_neighbor_vars(self, var):
         """
         Returns a list of variables which are neighbors of |var|.
         """
-        return self.binaryFactors[var].keys()
+        # gets the ternary factor neighbors
+        neighbors = set()
+        for key in self.ternaryFactors[var].keys():
+            neighbors.add(key)
+            for key2 in self.ternaryFactors[var][key].keys():
+                neighbors.add(key2)
+        # print "ternary variables are " , neighbors
+        result = neighbors.union(set(self.binaryFactors[var].keys()))
+        # print "all resulting variables are " , result
+        return list(result)
+
+    def add_ternary_factor(self, var1, var2, var3, factor_func):
+        try:
+            assert var1 != var2 and var2 != var3 and var1 != var3
+        except:
+            print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            print '!! Tip:                                                                       !!'
+            print '!! You are adding a binary factor over a same variable...                  !!'
+            print '!! Please check your code and avoid doing this.                               !!'
+            print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            raise
+
+        self.update_ternary_factor_table(var1, var2, var3,
+            {val1: {val2: {val3: float(factor_func(val1, val2, val3)) \
+                for val3 in self.values[var3]} for val2 in self.values[var2]} for val1 in self.values[var1]})
+        self.update_ternary_factor_table(var1, var3, var2,
+            {val1: {val3: {val2: float(factor_func(val1, val2, val3)) \
+                for val2 in self.values[var2]} for val3 in self.values[var3]} for val1 in self.values[var1]})
+        self.update_ternary_factor_table(var2, var1, var3, \
+            {val2: {val1: {val3: float(factor_func(val2, val1, val3)) \
+                for val3 in self.values[var3]} for val1 in self.values[var1]} for val2 in self.values[var2]})
+        self.update_ternary_factor_table(var2, var3, var1, \
+            {val2: {val3: {val1: float(factor_func(val1, val2, val3)) \
+                for val1 in self.values[var1]} for val3 in self.values[var3]} for val2 in self.values[var2]})
+        self.update_ternary_factor_table(var3, var1, var2, \
+            {val3: {val1: {val2: float(factor_func(val1, val2, val3)) \
+                for val2 in self.values[var2]} for val1 in self.values[var1]} for val3 in self.values[var3]})
+        self.update_ternary_factor_table(var3, var2, var1, \
+            {val3: {val2: {val1: float(factor_func(val1, val2, val3)) \
+                for val1 in self.values[var1]} for val2 in self.values[var2]} for val3 in self.values[var3]})
 
     def add_unary_factor(self, var, factorFunc):
         """
@@ -149,6 +187,24 @@ class CSP:
                 for j in table[i]:
                     assert i in currentTable and j in currentTable[i]
                     currentTable[i][j] *= table[i][j]
+
+    def update_ternary_factor_table(self, var1, var2, var3, table):
+        """
+        Private method you can skip for 0c, might be useful for 1c though.
+        Update the binary factor table for binaryFactors[var1][var2].
+        If it exists, element-wise multiplications will be performed to merge
+        them together.
+        """
+        if var1 not in self.ternaryFactors or var2 not in self.ternaryFactors[var1] or var3 not in self.ternaryFactors[var1][var2]:
+            # print self.ternaryFactors
+            self.ternaryFactors[var1][var2] = {var3 : table}
+        else:
+            currentTable = self.ternaryFactors[var1][var2][var3]
+            for i in table:
+                for j in table[i]:
+                    for k in table[i][j]:
+                        assert i in currentTable and j in currentTable[i] and k in currentTable[i][j]
+                        currentTable[i][j][k] *= table[i][j][k]
 
 ############################################################
 # CSP examples.
@@ -275,6 +331,7 @@ def get_or_variable(csp, name, variables, value):
 # self.rating: int from 1 to 5
 # self.duration: in minutes
 # self.cost: in dollars (expecting one number)
+# self.review_count: number of reviews
 # self.is_food: 1 if restaurant else 0
 class Activity:
     def __init__(self, unique_id, info, is_restaurant):
@@ -285,13 +342,14 @@ class Activity:
         self.rating = float(info['rating'])
         self.duration = int(info['time_spent_minutes'])
         self.cost = Price[info['price'].replace("$", "m")].value if 'price' in info else 0
+        self.review_count = int(info['review_count'])
         self.is_food = is_restaurant
 
     def short_str(self): return self.name
 
     def __str__(self):
-        return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, is_food: %d}' % 
-            (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.is_food))
+        return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, review_count: %d is_food: %d}' %
+            (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.review_count, self.is_food))
 
 
 # Information about all the activities
@@ -310,7 +368,7 @@ class ActivityCollection:
         for genre, path in pathsByGenre.iteritems():
             self.load_activities(path, genre)
         # add home domain
-        home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5}, False)
+        home = Activity(-1, {"name": "home", "coordinates": {"longitude": profile.user_longitude, "latitude": profile.user_latitude}, "time_spent_minutes": 0, "rating": 5, "review_count": 0}, False)
         self.activities['home'] = {-1: home}
 
         # add restaurant dict to user's selected genre
@@ -428,7 +486,6 @@ class Profile:
 
 def print_all_scheduling_solutions(solutions, profile, ac):
     if solutions is None: return
-    print "all solutions"
     for s in solutions:
         print_scheduling_solution(s, profile, ac)
         print
@@ -439,11 +496,9 @@ def print_scheduling_solution(solution, profile, ac):
     activities = ac[profile.genre]
     for key, value in solution.items():
         if isinstance(key, (int, long)):
-            if value == None:
-                print "no activity for this slot"
-            elif value == -1:
+            if value == -1:
                 print ac['home'][value]
-            elif key % 2 == 0:
+            elif key % 2 == 0 and value != None:
                 print activities[value]
             else:
                 print value
