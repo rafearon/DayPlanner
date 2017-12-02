@@ -2,13 +2,15 @@
 import sys
 import argparse
 import json
+import random
+from final_project import util
 
 # Coordinates of Stanford University Tresidder Parking Lot
 DEFAULT_LAT = 37.42358
 DEFAULT_LONG = -122.170733
 
 DEFAULT_BUDGET = 100
-DEFAULT_START = 12
+DEFAULT_START = 9
 DEFAULT_END = 17
 DEFAULT_GENRE = "all"
 
@@ -17,7 +19,7 @@ GENRE_FILES = {
   "thrill": "thrill.json",
   "intellect": "intellect.json",
   "outdoors": "outdoors.json",
-  "all": "business.json"
+  "all": "all.json"
 }
 # Name of file storing restaurant info
 RESTAURANT_FILE = "restaurants.json"
@@ -31,7 +33,7 @@ PRICE_RANGE = {
   "$$$$": 100
 }
 
-DEFAULT_DURATION = 2
+DEFAULT_DURATION = 1
 DEFAULT_TRAVEL_TIME = .5
 
 def get_price(business):
@@ -69,7 +71,8 @@ def load_businesses(filename):
 def get_activity(businesses, constraints, itinerary):
   """ Returns first activity that matches constraints
   """
-  for b in businesses:
+  for i in range(len(businesses)):
+    b = random.choice(businesses)
     if (get_price(b) < constraints["moneyLeft"] and
       get_travel_time(b, constraints["lat"], constraints["long"]) +
         get_duration(b) <= constraints["timeLeft"] and
@@ -187,7 +190,9 @@ def main():
   restaurants = (load_businesses(prefs.restaurants or RESTAURANT_FILE)
     if prefs.food else None)
   itinerary = create_itinerary(prefs, businesses, restaurants)
-  print_itinerary(itinerary)
+  #print_itinerary(itinerary)
+  score = util.ScheduleScore(itinerary, baseline=True, food = True)
+  print "Itinerary rank = ", score.get_schedule_score()
 
 if __name__ == "__main__":
     main()

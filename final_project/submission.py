@@ -2,7 +2,7 @@ import collections, util, copy, math, random, sys
 
 import geopy.distance
 
-time_per_mile = 2 # minutes
+time_per_mile = 4 # minutes
 
 import collections, util, copy
 
