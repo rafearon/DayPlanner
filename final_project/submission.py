@@ -408,7 +408,7 @@ class SchedulingCSPConstructor():
     def __init__(self, activities, profile):
         self.activities = activities[profile.genre] # dict
         self.profile = profile
-        self.num_slots = 10 # always keep this even!
+        self.num_slots = 11 # always keep this odd!
         self.max_travel_time = 15 #mins
         self.home = activities['home'] #dict 
 
@@ -522,7 +522,7 @@ class SchedulingCSPConstructor():
                         return 0.5 # neutral value so we don't promote/demote empty slots
                     else:
                         if a == 0: return .9
-                        return 1/a.duration
+                        return 1/a
                 csp.add_unary_factor(i, factor)
         print "ending add weighted travel time constaints"
 
@@ -549,15 +549,14 @@ class SchedulingCSPConstructor():
     def add_slot_travel_time_constraints(self, csp):
         print "starting add travel time constaints"
         for i in range(1, self.num_slots):
-            if i % 2 != 0 and i + 1 != self.num_slots:
+            if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a is None or b is None or c is None:
-                        return 1
+                        return 0.5
                     if a == -1:
                         return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                     else:
                         return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
-                print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
 
@@ -604,5 +603,5 @@ class SchedulingCSPConstructor():
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
         self.add_time_constraints(csp)
-        # self.add_weighted_travel_time_constraints(csp)
+        self.add_weighted_travel_time_constraints(csp)
         return csp
