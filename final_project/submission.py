@@ -607,7 +607,6 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
-                #pass
                 csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
         print "ending add variables"
     
@@ -743,7 +742,7 @@ class SchedulingCSPConstructor():
             if i % 2 == 0:
                 def factor(a):
                     if a is None:
-                        return .5
+                        return 1
                     num_reviews = self.activities[a].review_count
                     if num_reviews == 0:
                         return .5
