@@ -4,7 +4,11 @@ from datetime import datetime
 from datetime import timedelta
 from enum import Enum
 import simplejson
+import googlemaps
+import geopy
+from time import sleep
 
+LIMIT_NUM_ACTIVITIES_PER_FILE = 100
 
 class Time(object):
     duration = 0
@@ -335,7 +339,7 @@ class ActivityCollection:
         tokens = None
         with open(path, 'r') as activities:
             lines = sum(1 for _ in activities)
-            tokens = random.sample(xrange(lines), min(800, lines))
+            tokens = random.sample(xrange(lines), min(LIMIT_NUM_ACTIVITIES_PER_FILE, lines))
         with open(path, 'r') as activities:
             a_linecount = 0
             for a in activities:
@@ -601,13 +605,20 @@ class DriveScore:
 
     def get_drive_time(self, lat1, long1, lat2, long2):
         #FIX
-        orig_coord = lat1, long1
-        dest_coord = lat2, long2
-        gmaps = GoogleMaps('AIzaSyAuZHgSCz5SnUhjUDE32NmjW2H_ib18UNQ')
-        origAddr = gmaps.reverse_geocode(float(lat1), float(long1))
-        destAddr = gmaps.reverse_geocode(float(lat2), float(long2))
+
+        orig_coord = (float(lat1), float(long1))
+        dest_coord = (float(lat2), float(long2))
+
+        dist = geopy.distance.distance(orig_coord, dest_coord).miles
+        return dist * 0.7
+
+
+        gmaps = googlemaps.Client('AIzaSyAuZHgSCz5SnUhjUDE32NmjW2H_ib18UNQ')
+        origAddr = gmaps.reverse_geocode((float(lat1), float(long1)))
+        destAddr = gmaps.reverse_geocode((float(lat2), float(long2)))
         directions = gmaps.directions(origAddr, destAddr)
         driving_time = directions['Directions']['Duration']['minutes']
+        sleep(1)
         return driving_time
 
     def get_cost_between_activities(self, activity1, activity2):
@@ -673,7 +684,7 @@ class ScheduleScore:
                 if isinstance(key, (int, long)):
                         if key == 0:
                             pass
-                        elif key % 2 != 0 and key > 0:
+                        elif key % 2 != 0 and key > 1 and key < 9:
                                 prevAct = self.activities[self.schedule[key-1]]
                                 nextAct = self.activities[self.schedule[key+1]]
                                 ds = DriveScore(prevAct)

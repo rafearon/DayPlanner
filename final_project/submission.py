@@ -6,6 +6,7 @@ time_per_mile = 4 # minutes
 
 import collections, util, copy
 
+
 ############################################################
 # Problem 0
 
@@ -175,8 +176,8 @@ class ICRSearch():
             self.prev_weight = -1.0
             self.icr_iterations = 0
             startAssignment = self.icr_init()
-            while(self.icr_iterations < self.cutoff) and format(self.curr_weight, '.5f') != format(self.prev_weight, '.5f'):
-                print "Round", self.icr_iterations
+            while self.icr_iterations < self.cutoff and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
+                #print "Round", self.icr_iterations
                 self.icr(startAssignment)
                 self.icr_iterations += 1
             self.allAssignments.append(startAssignment)
@@ -193,7 +194,7 @@ class ICRSearch():
         for var_idx, var in enumerate(self.csp.variables):
                 ordered_values = self.domains[var]
                 success = False
-                for tries in range(0,800):
+                for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):
                     val = random.choice(ordered_values)
                     delta_weight = self.get_delta_weight(newAssignment, var, val)
                     #print delta_weight
