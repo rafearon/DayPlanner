@@ -6,17 +6,17 @@ from enum import Enum
 
 class Time(object):
     duration = 0
-    a_latitude = 0
-    a_longitude = 0
-    b_latitude = 0
-    b_longitude = 0
+    # a_latitude = 0
+    # a_longitude = 0
+    # b_latitude = 0
+    # b_longitude = 0
 
     def __init__(self, duration, a_latitude, a_longitude, b_latitude, b_longitude):
         self.duration = duration
-        self.a_latitude = a_latitude
-        self.a_longitude = a_longitude
-        self.b_latitude = b_latitude
-        self.b_longitude = b_longitude
+        # self.a_latitude = a_latitude
+        # self.a_longitude = a_longitude
+        # self.b_latitude = b_latitude
+        # self.b_longitude = b_longitude
 
     def __str__(self):
         return ('Time{duration: %d, a_latitude: %f, a_longitude: %f, b_latitude: %f, b_longitude: %f}' %
@@ -63,6 +63,8 @@ class CSP:
 
         self.binaryFactors = {}
 
+        self.ternaryFactors = {}
+
     def add_variable(self, var, domain):
         """
         Add a new variable to the CSP.
@@ -75,13 +77,52 @@ class CSP:
         self.values[var] = domain
         self.unaryFactors[var] = None
         self.binaryFactors[var] = dict()
-
+        self.ternaryFactors[var] = dict()
 
     def get_neighbor_vars(self, var):
         """
         Returns a list of variables which are neighbors of |var|.
         """
-        return self.binaryFactors[var].keys()
+        # gets the ternary factor neighbors
+        neighbors = set()
+        for key in self.ternaryFactors[var].keys():
+            neighbors.add(key)
+            for key2 in self.ternaryFactors[var][key].keys():
+                neighbors.add(key2)
+        # print "ternary variables are " , neighbors
+        result = neighbors.union(set(self.binaryFactors[var].keys()))
+        # print "all resulting variables are " , result
+        return list(result)
+
+    def add_ternary_factor(self, var1, var2, var3, factor_func):
+        try:
+            assert var1 != var2 and var2 != var3 and var1 != var3
+        except:
+            print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            print '!! Tip:                                                                       !!'
+            print '!! You are adding a binary factor over a same variable...                  !!'
+            print '!! Please check your code and avoid doing this.                               !!'
+            print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            raise
+
+        self.update_ternary_factor_table(var1, var2, var3,
+            {val1: {val2: {val3: float(factor_func(val1, val2, val3)) \
+                for val3 in self.values[var3]} for val2 in self.values[var2]} for val1 in self.values[var1]})
+        self.update_ternary_factor_table(var1, var3, var2,
+            {val1: {val3: {val2: float(factor_func(val1, val2, val3)) \
+                for val2 in self.values[var2]} for val3 in self.values[var3]} for val1 in self.values[var1]})
+        self.update_ternary_factor_table(var2, var1, var3, \
+            {val2: {val1: {val3: float(factor_func(val2, val1, val3)) \
+                for val3 in self.values[var3]} for val1 in self.values[var1]} for val2 in self.values[var2]})
+        self.update_ternary_factor_table(var2, var3, var1, \
+            {val2: {val3: {val1: float(factor_func(val1, val2, val3)) \
+                for val1 in self.values[var1]} for val3 in self.values[var3]} for val2 in self.values[var2]})
+        self.update_ternary_factor_table(var3, var1, var2, \
+            {val3: {val1: {val2: float(factor_func(val1, val2, val3)) \
+                for val2 in self.values[var2]} for val1 in self.values[var1]} for val3 in self.values[var3]})
+        self.update_ternary_factor_table(var3, var2, var1, \
+            {val3: {val2: {val1: float(factor_func(val1, val2, val3)) \
+                for val1 in self.values[var1]} for val2 in self.values[var2]} for val3 in self.values[var3]})
 
     def add_unary_factor(self, var, factorFunc):
         """
@@ -93,6 +134,7 @@ class CSP:
         value |val|?
         => csp.unaryFactors[var][val]
         """
+        # for everything in the domain, this creates a map from domain value to function output
         factor = {val:float(factorFunc(val)) for val in self.values[var]}
         if self.unaryFactors[var] is not None:
             assert len(self.unaryFactors[var]) == len(factor)
@@ -146,6 +188,23 @@ class CSP:
                     assert i in currentTable and j in currentTable[i]
                     currentTable[i][j] *= table[i][j]
 
+    def update_ternary_factor_table(self, var1, var2, var3, table):
+        """
+        Private method you can skip for 0c, might be useful for 1c though.
+        Update the binary factor table for binaryFactors[var1][var2].
+        If it exists, element-wise multiplications will be performed to merge
+        them together.
+        """
+        if var1 not in self.ternaryFactors or var2 not in self.ternaryFactors[var1] or var3 not in self.ternaryFactors[var1][var2]:
+            # print self.ternaryFactors
+            self.ternaryFactors[var1][var2] = {var3 : table}
+        else:
+            currentTable = self.ternaryFactors[var1][var2][var3]
+            for i in table:
+                for j in table[i]:
+                    for k in table[i][j]:
+                        assert i in currentTable and j in currentTable[i] and k in currentTable[i][j]
+                        currentTable[i][j][k] *= table[i][j][k]
 
 ############################################################
 # CSP examples.
@@ -439,11 +498,8 @@ def print_scheduling_solution(solution, profile, ac):
         if isinstance(key, (int, long)):
             if value == -1:
                 print ac['home'][value]
-            elif key % 2 == 0:
-                if value == None:
-                    print "No activity"
-                else:
-                    print activities[value]
+            elif key % 2 == 0 and value != None:
+                print activities[value]
             else:
                 print value
         else:

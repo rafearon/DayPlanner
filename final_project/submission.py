@@ -14,7 +14,7 @@ def create_chain_csp(n):
     # same domain for each variable
     domain = [0, 1]
     # name variables as x_1, x_2, ..., x_n
-    variables = ['x%d'%i for i in range(1, n+1)]
+    # variables = ['x%d'%i for i in range(1, n+1)]
     csp = util.CSP()
     # Problem 0c
     # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
@@ -27,6 +27,27 @@ def create_chain_csp(n):
         if i < len(variables) - 1:
             next_variable = variables[i+1]
             csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
+    # END_YOUR_CODE
+    return csp
+
+def create_ternary_test_csp(n):
+    # same domain for each variable
+    domain = [0, 1]
+    # name variables as x_1, x_2, ..., x_n
+    # variables = ['x%d'%i for i in range(1, n+1)]
+    csp = util.CSP()
+    # Problem 0c
+    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
+    for i in range(0, n):
+        # variable = variables[i]
+        csp.add_variable(i, domain)
+    csp.add_ternary_factor(0, 1, 2, lambda x, y, z: x + y + z == 2)
+    # if len(variables) <= 1: return csp
+    # for i in range(0, len(variables)):
+    #     variable = variables[i]
+    #     if i < len(variables) - 1:
+    #         next_variable = variables[i+1]
+    #         csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
     # END_YOUR_CODE
     return csp
 
@@ -314,6 +335,12 @@ class BacktrackingSearch():
             if var2 not in assignment: continue  # Not assigned yet
             w *= factor[val][assignment[var2]]
             if w == 0: return w
+        for var2 in self.csp.ternaryFactors[var]:
+            # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
+            for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
+                if var2 or var3 not in assignment: continue  # Not assigned yet
+                w *= factor[val][assignment[var2]][assignment[var3]]
+                if w == 0: return w
         return w
 
     def solve(self, csp, mcv = False, ac3 = False, max_num_assignments = 10):
@@ -580,20 +607,23 @@ class SchedulingCSPConstructor():
         delta = 1
 
         time_domain = []
-        for x in range(0, self.max_travel_time + 1):
-            a_latitude = min_latitude
-            while a_latitude < max_latitude:
-                a_longitude = min_longitude
-                while a_longitude < max_longitude:
-                    b_latitude = min_latitude
-                    while b_latitude < max_latitude:
-                        b_longitude = min_longitude
-                        while b_longitude < max_longitude:
-                            time_domain.append(util.Time(x, a_latitude, a_longitude, b_latitude, b_longitude))
-                            b_longitude = b_longitude + delta
-                        b_latitude = b_latitude + delta
-                    a_longitude = a_longitude + delta
-                a_latitude = a_latitude + delta
+        for x in range(0, self.max_travel_time+1):
+            time_domain.append(x)
+
+        # for x in range(0, self.max_travel_time + 1):
+        #     a_latitude = min_latitude
+        #     while a_latitude < max_latitude:
+        #         a_longitude = min_longitude
+        #         while a_longitude < max_longitude:
+        #             b_latitude = min_latitude
+        #             while b_latitude < max_latitude:
+        #                 b_longitude = min_longitude
+        #                 while b_longitude < max_longitude:
+        #                     time_domain.append(util.Time(x, a_latitude, a_longitude, b_latitude, b_longitude))
+        #                     b_longitude = b_longitude + delta
+        #                 b_latitude = b_latitude + delta
+        #             a_longitude = a_longitude + delta
+        #         a_latitude = a_latitude + delta
         
         activities_domain = list(self.activities.keys())
         home_domain = list(self.home.keys())
@@ -607,7 +637,8 @@ class SchedulingCSPConstructor():
                 csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
-                csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
+                # csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
+                csp.add_variable(i, time_domain + [None])
         print "ending add variables"
     
     # budget: value of (i, "activity") summed up less than user budget
@@ -634,16 +665,19 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = a.duration
-                # print val
+                val = self.activities[a].duration
             return b[1] == b[0] + val
 
-        variables = []
+        activity_variables = []
+        time_variables = []
         for i in range(0, self.num_slots):
-            if i % 2 != 0: # not accounting for time of activity
-                variables.append(i)
-        result = get_sum_variable(csp, "time", variables, self.profile.total_time, factor)
-        csp.add_unary_factor(result, lambda val: val <= self.profile.total_time)
+            if i % 2 == 0 and i != 0:
+                activity_variables.append(i)
+            if i % 2 != 0 and i != 0:
+                time_variables.append(i)
+        result1 = get_sum_variable(csp, "act_time", activity_variables, self.profile.total_time, factor)
+        result2 = get_sum_variable(csp, "travel_time", activity_variables, self.profile.total_time, factor)
+        csp.add_binary_factor(result1, result2, lambda val1, val2: val1 + val2 <= self.profile.total_time)
         print "ending time contraints"
 
     # constraint to make activities different in a schedule
@@ -659,7 +693,7 @@ class SchedulingCSPConstructor():
 
         print "ending add_different_activity_constraints"
 
-    # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vv
+    # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vice versa
     def add_weighted_travel_time_constraints(self, csp):
         print "starting add weighted travel time constaints"
         for i in range(0, self.num_slots):
@@ -696,32 +730,16 @@ class SchedulingCSPConstructor():
     def add_slot_travel_time_constraints(self, csp):
         print "starting add travel time constaints"
         for i in range(1, self.num_slots):
-            if i % 2 != 0:
-                def factor_before(a, b):
-                    if a is None and b is not None:
-                        return 0
-                    if a is None and b is None: 
-                        return 1
-                    if a is not None and b is None:
+            if i % 2 != 0 and i + 1 != self.num_slots:
+                def factor_duration(a, b, c):
+                    if a is None or b is None or c is None:
                         return 1
                     if a == -1:
-                        return 1
-                    return self.activities[a].latitude == b.a_latitude and self.activities[a].longitude == b.a_longitude
-                def factor_after(b, a):
-                    if b is None and a is not None:
-                        return 0
-                    if b is None and a is None: 
-                        return 1
-                    if b is not None and a is None:
-                        return 1
-                    return self.activities[a].latitude == b.b_latitude and self.activities[a].longitude == b.b_longitude
-                def factor_duration(a):
-                    if a is None:
-                        return 1
-                    return a.duration == find_travel_time(a.a_latitude, a.a_longitude, a.b_latitude, a.b_longitude)
-                csp.add_binary_factor(i-1, i, factor_before)
-                csp.add_binary_factor(i, i+1, factor_after)
-                csp.add_unary_factor(i, factor_duration)
+                        return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                    else:
+                        return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                print i
+                csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
 
     # rating: for the value of each (i, "activity"), we give a higher weight for a better rating, UNARY FACTOR
@@ -765,6 +783,7 @@ class SchedulingCSPConstructor():
         self.add_rating_constraints(csp)
         self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
-        # self.add_slot_travel_time_constraints(csp)
-        # self.add_time_constraints(csp)
+        self.add_slot_travel_time_constraints(csp)
+        self.add_time_constraints(csp)
+        # self.add_weighted_travel_time_constraints(csp)
         return csp
