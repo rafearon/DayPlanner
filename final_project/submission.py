@@ -259,6 +259,10 @@ class BeamSearch():
         ordered_vars.extend([('sum', 'food', 'aggregated'),
             ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
             ('sum', 'food', 3)])
+        
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+
         # budget vars
         ordered_vars.extend([
             ('sum', 'budget', 0),
@@ -279,8 +283,6 @@ class BeamSearch():
         #     ('sum', 'travel_time', 2),
         #     ('sum', 'travel_time', 1),
         #     ('sum', 'travel_time', 0)])
-        # activity vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 

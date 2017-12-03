@@ -15,7 +15,7 @@ cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
 alg = submission.BeamSearch()
-k=1000
+k=100
 alg.solve(csp, mcv = False, ac3 = True, k = k)
 
 if alg.allAssignments:
