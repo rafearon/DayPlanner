@@ -79,11 +79,12 @@ class ICRSearch():
             if var2 not in assignment: continue  # Not assigned yet
             w *= factor[val][assignment[var2]]
             if w == 0: return w
-        if w == float('inf'):
-            print "assignment = ", assigment
-            print "var = ", var
-            print "val = ", val
-
+        for var2 in self.csp.ternaryFactors[var]:
+            # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
+            for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
+                if var2 not in assignment or var3 not in assignment: continue  # Not assigned yet
+                w *= factor[val][assignment[var2]][assignment[var3]]
+                if w == 0: return w
         return w
 
     def solve(self, csp, activities, genre, num_assignments = 10):
@@ -149,7 +150,7 @@ class ICRSearch():
                 ordered_values = self.domains[var]
                 #booleans to prevent over iteration if no solution is found + prevent too much food. CURRENTLY THERE ARE STILL FOOD PROGRESSIVES
                 success = False
-                assigment_contains_food = False
+                assignment_contains_food = False
 
                 #Tries to initialize the first assignments with weight > 0 
                 for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):

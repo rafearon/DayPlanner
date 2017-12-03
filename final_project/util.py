@@ -654,7 +654,7 @@ class DriveScore:
 
     def __init__(self, drive_activity):
             self.drive_activity = drive_activity
-            self.drive_score_norm = -0.5
+            self.drive_score_norm = -0.7
 
 
 
@@ -673,7 +673,7 @@ class DriveScore:
         dest_coord = (float(lat2), float(long2))
 
         dist = geopy.distance.distance(orig_coord, dest_coord).miles
-        return dist * 0.7
+        return dist
 
 
         gmaps = googlemaps.Client('AIzaSyAuZHgSCz5SnUhjUDE32NmjW2H_ib18UNQ')

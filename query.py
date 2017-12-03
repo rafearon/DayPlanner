@@ -128,6 +128,52 @@ RESTAURANTS = [
 ]
 
 
+FROMMERS_LOCATION = "San Francisco, CA"
+FROMMERS_SEARCHES = [
+"Alcatraz",
+"Pier 39",
+"The Crepe Cafe",
+"The Exploratorium",
+"Gott's Roadside", 
+"Golden Gate Bridge",
+"Bar Bocce",
+"The Musee Mechanique",
+"Ghirardelli",
+"Nob Hill",
+"Cable Car Museum",
+"Chinatown",
+"California Academy of Sciences",
+"Cliff House",
+"Buena Vista Cafe",
+"Great Eastern Restaurant",
+"North Beach",
+"Mario's Bohemian Cigar Store"
+"Original Joe's"
+"Swann's Oyster Depot",
+"Club Fugazi"
+]
+
+ONLINE_AUTO_SEARCH_SF = [
+"Handlery Union Square",
+"Three 9 Eight Brasserie",
+"Samovar Tea Lounge",
+"XOX Truffles",
+"Del Popolo",
+"Luce",
+"Palace of Fine Arts",
+"Audium",
+"Mission Nightlife"
+]
+
+ONLINE_AUTO_SEARCH_NAPA = [
+"Bouchaine Vineyards",
+"Castello di Amorosa",
+"Gloria Ferrer Caves",
+"Cline Cellars",
+"The Barlow"
+]
+
+
 
 def find_genre_by_term(term):
     if term in RESTAURANTS:
@@ -241,7 +287,7 @@ def request(host, path, bearer_token, url_params=None):
     return response.json()
 
 
-def search(bearer_token, term, location, offset):
+def search(bearer_token, term, location, offset = 0, limit = BLOCK_LIMIT):
     """Query the Search API by a search term and location.
 
     Args:
@@ -255,7 +301,7 @@ def search(bearer_token, term, location, offset):
     url_params = {
         'term': term.replace(' ', '+'),
         'location': location.replace(' ', '+'),
-        'limit': BLOCK_LIMIT,
+        'limit': limit,
         'offset': offset,
         'radius': 40000,
         'sort_by': 'rating'
@@ -276,6 +322,39 @@ def get_business(bearer_token, business_id):
     business_path = BUSINESS_PATH + business_id
 
     return request(API_HOST, business_path, bearer_token)
+
+
+
+def query_api_extern(term, location, genre):
+    """Queries the API by the input values from the user.
+
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    bearer_token = obtain_bearer_token(API_HOST, TOKEN_PATH)
+
+    results = set()
+    print("Querying Yelp with term = " + term +" , location = " + location)
+    #with open(term+"-businesses.txt", 'w') as out:
+    offset = 0
+    response = search(bearer_token, term, location, offset, limit = 1)
+    businesses = response.get('businesses')
+            #print(response)
+            #print businesses
+            #print offset
+            
+    if businesses:
+            business = businesses[0]
+            business_id = business['id']
+            #business_details = get_business(bearer_token, business_id)
+            business_dict = json.loads(json.dumps(business))
+            del business_dict['distance']
+            return json.dumps(business_dict)
+                    #out.write(json.dumps(business))
+                    #out.write("\n")
+            
+    return None
 
 
 def query_api(term, location):
@@ -345,12 +424,28 @@ def remove_duplicates(genre):
             
 
 
+def setup_extern_itineraries():
+    frommers = set()
+    for term in FROMMERS_SEARCHES:
+        frommers.add(query_api_extern(term, FROMMERS_LOCATION, 'Frommers'))
+    utrip = set()
+    for term in ONLINE_AUTO_SEARCH_NAPA:
+        utrip.add(query_api_extern(term, 'Napa, CA', 'Utrip'))
+    for term in ONLINE_AUTO_SEARCH_SF:
+        utrip.add(query_api_extern(term, 'Napa, CA', 'Utrip'))
+    write_results_to_file("Frommers", 'null', frommers)
+    write_results_to_file("Utrip", 'null', utrip)
+
+
+
 
                 
 
 
 
 def main():
+    setup_extern_itineraries()
+    '''
     all_terms = get_genre_terms("all")
     termDirectory = multi_query_business(all_terms, LOCATIONS)
     for term in all_terms:
@@ -369,7 +464,7 @@ def main():
                 out.write(json.dumps(item))
                 out.write("\n")
 
-    
+    '''
 
 if __name__ == '__main__':
     main()

@@ -9,7 +9,7 @@ profile = util.Profile(profilePath)
 profile.print_info()
 # genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
 genre = 'thrill'
-genreToPath = {genre:'../all.json','food':'../restaurants.json'}
+genreToPath = {genre:'../activities_100.json','food':'../restaurants_100.json'}
 # genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
 activities = util.ActivityCollection(profile, genreToPath).activities
 cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
