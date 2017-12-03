@@ -494,15 +494,19 @@ def print_scheduling_solution(solution, profile, ac):
     if solution == None:
         print "No schedule found that satisfied all the constraints."
     activities = ac[profile.genre]
-    for key, value in solution.items():
-        if isinstance(key, (int, long)):
-            if value == -1:
-                print ac['home'][value]
-            elif key % 2 == 0 and value != None:
-                print activities[value]
-            else:
-                print value
+    time_slots = 11
+    # print all activity and time slots first
+    for slot in range(time_slots):
+        value = solution[slot]
+        if value == -1:
+            print ac['home'][value]
+        elif slot % 2 == 0 and value != None:
+            print activities[value]
         else:
+            print value
+
+    for key, value in solution.items():
+        if not isinstance(key, (int, long)):
             print key, '=', value
 
 def extract_course_scheduling_solution(profile, assign):
