@@ -112,7 +112,7 @@ class CSP:
             {val1: {val3: {val2: float(factor_func(val1, val2, val3)) \
                 for val2 in self.values[var2]} for val3 in self.values[var3]} for val1 in self.values[var1]})
         self.update_ternary_factor_table(var2, var1, var3, \
-            {val2: {val1: {val3: float(factor_func(val2, val1, val3)) \
+            {val2: {val1: {val3: float(factor_func(val1, val2, val3)) \
                 for val3 in self.values[var3]} for val1 in self.values[var1]} for val2 in self.values[var2]})
         self.update_ternary_factor_table(var2, var3, var1, \
             {val2: {val3: {val1: float(factor_func(val1, val2, val3)) \
