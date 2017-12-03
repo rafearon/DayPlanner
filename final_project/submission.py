@@ -337,6 +337,9 @@ class BeamSearch():
             #print extended
             #print assignments
             num_assigned += 1
+        
+        for a, w in assignments:
+                print w
 
         self.allAssignments = [a for a, w in assignments]
 
@@ -381,18 +384,34 @@ class BeamSearch():
         # food variables
         ordered_vars.extend([('sum', 'food', 'aggregated'),
             ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
-            ('sum', 'food', 3)])
+            ('sum', 'food', 3), ('sum', 'food', 4)])
         # budget vars
         ordered_vars.extend([
             ('sum', 'budget', 0),
             ('sum', 'budget', 1),
             ('sum', 'budget', 2),
             ('sum', 'budget', 3),
+            ('sum', 'budget', 4),
             ('sum', 'budget', 'aggregated')])
         # activity vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
+
+        ordered_vars.extend([
+            ('sum', 'act_time', 0),
+            ('sum', 'act_time', 1),
+            ('sum', 'act_time', 2),
+            ('sum', 'act_time', 3),
+            ('sum', 'act_time', 4),
+            ('sum', 'act_time', 'aggregated'),
+            ('sum', 'travel_time', 0),
+            ('sum', 'travel_time', 1),
+            ('sum', 'travel_time', 2),
+            ('sum', 'travel_time', 3),
+            ('sum', 'travel_time', 4),
+            ('sum', 'travel_time', 'aggregated')
+            ])
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
