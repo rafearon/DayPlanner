@@ -1,0 +1,44 @@
+Budget: 60
+Time: 09:00 - 20:00 (total of 660 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  60
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting add review count constraints
+ending add review count constraints
+starting ICR
+Starting ICR candidate  0
+TOTAL WEIGHT OF ASSIGNMENT  0  =  37807.4098234
+Starting ICR candidate  1
+TOTAL WEIGHT OF ASSIGNMENT  1  =  inf
+Starting ICR candidate  2
+TOTAL WEIGHT OF ASSIGNMENT  2  =  10303.6330029
+Starting ICR candidate  3
+TOTAL WEIGHT OF ASSIGNMENT  3  =  24903.7264474
+Starting ICR candidate  4
+TOTAL WEIGHT OF ASSIGNMENT  4  =  inf
+Starting ICR candidate  5
+TOTAL WEIGHT OF ASSIGNMENT  5  =  11065.8946913
+Starting ICR candidate  6
+TOTAL WEIGHT OF ASSIGNMENT  6  =  26499.5910948
+Starting ICR candidate  7
+TOTAL WEIGHT OF ASSIGNMENT  7  =  inf
+Starting ICR candidate  8
+TOTAL WEIGHT OF ASSIGNMENT  8  =  41343.1164152
+Starting ICR candidate  9
+TOTAL WEIGHT OF ASSIGNMENT  9  =  8020.20343012
+ending ICR
+No solution was found.
+printing k=10 assignments found
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None

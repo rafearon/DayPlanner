@@ -1,0 +1,262 @@
+Budget: 60
+Time: 09:00 - 20:00 (total of 660 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  60
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting add review count constraints
+ending add review count constraints
+starting ICR
+Starting ICR candidate  0
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  0  =  12197.1217641
+Starting ICR candidate  1
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  1  =  19714.5671829
+Starting ICR candidate  2
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  2  =  23376.4540343
+Starting ICR candidate  3
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  3  =  15027.1700464
+Starting ICR candidate  4
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  4  =  29277.019859
+Starting ICR candidate  5
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  5  =  13220.4197354
+Starting ICR candidate  6
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  6  =  inf
+Starting ICR candidate  7
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  7  =  41418.2104714
+Starting ICR candidate  8
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  8  =  1.32805013523e+94
+Starting ICR candidate  9
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  9  =  16040.9571506
+ending ICR
+No solution was found.
+printing k=10 assignments found
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: The Hidden Vine, unique_id: 46, latitude: 37.795550, longitude: -122.400720, rating: 4, duration: 30, cost: 30, review_count: 737 is_food: 1}
+None
+Activity{name: Crown Memorial State Beach, unique_id: 803, latitude: 37.766412, longitude: -122.272189, rating: 4, duration: 180, cost: 0, review_count: 106 is_food: 0}
+None
+Activity{name: Fleet Feet Sports, unique_id: 1066, latitude: 37.659099, longitude: -121.876472, rating: 4, duration: 120, cost: 30, review_count: 165 is_food: 0}
+None
+Activity{name: Gaslight, unique_id: 846, latitude: 37.362392, longitude: -121.825584, rating: 4, duration: 20, cost: 10, review_count: 1 is_food: 0}
+None
+('sum', 'budget', 2) = (32, 6)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (60, 4)
+('sum', 'budget', 'aggregated') = 4
+('sum', 'food', 3) = (1, 1)
+('sum', 'budget', 0) = (36, 56)
+('sum', 'food', 2) = (1, 1)
+('sum', 'budget', 1) = (9, 8)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Little Skillet, unique_id: 1542, latitude: 37.778828, longitude: -122.394066, rating: 4, duration: 30, cost: 30, review_count: 1776 is_food: 0}
+None
+Activity{name: Beso Club, unique_id: 914, latitude: 37.329368, longitude: -121.886366, rating: 2, duration: 30, cost: 30, review_count: 5 is_food: 0}
+None
+Activity{name: Zachary's Chicago Pizza, unique_id: 62, latitude: 37.891517, longitude: -122.278572, rating: 4, duration: 30, cost: 30, review_count: 1730 is_food: 1}
+None
+Activity{name: Bar 587, unique_id: 793, latitude: 37.787710, longitude: -122.411390, rating: 4, duration: 30, cost: 30, review_count: 152 is_food: 1}
+None
+('sum', 'budget', 2) = (56, 34)
+('sum', 'food', 'aggregated') = 0
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (7, 44)
+('sum', 'budget', 'aggregated') = 44
+('sum', 'food', 3) = (1, 0)
+('sum', 'budget', 0) = (43, 14)
+('sum', 'food', 2) = (1, 1)
+('sum', 'budget', 1) = (37, 0)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Penrose, unique_id: 1423, latitude: 37.812970, longitude: -122.247040, rating: 3, duration: 60, cost: 60, review_count: 408 is_food: 0}
+None
+Activity{name: Eagle's Point, unique_id: 964, latitude: 37.787637, longitude: -122.494772, rating: 4, duration: 180, cost: 0, review_count: 22 is_food: 0}
+None
+Activity{name: Matxain Etxea Basque Restaurant, unique_id: 713, latitude: 36.843885, longitude: -121.537083, rating: 4, duration: 30, cost: 30, review_count: 154 is_food: 1}
+None
+Activity{name: Ahi Sushi Hibachi, unique_id: 1433, latitude: 37.486890, longitude: -122.223120, rating: 4, duration: 30, cost: 30, review_count: 276 is_food: 0}
+None
+('sum', 'budget', 2) = (15, 49)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (25, 32)
+('sum', 'budget', 'aggregated') = 32
+('sum', 'food', 3) = (1, 1)
+('sum', 'budget', 0) = (14, 20)
+('sum', 'food', 2) = (0, 1)
+('sum', 'budget', 1) = (33, 42)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Louie's Bar, unique_id: 499, latitude: 37.789558, longitude: -122.399574, rating: 4, duration: 30, cost: 30, review_count: 357 is_food: 1}
+None
+Activity{name: Tiffany's Dance Academy, unique_id: 1214, latitude: 37.641500, longitude: -122.426080, rating: 2, duration: 120, cost: 0, review_count: 38 is_food: 0}
+None
+Activity{name: Serenity Spa of Morgan Hill, unique_id: 1132, latitude: 37.112240, longitude: -121.636480, rating: 5, duration: 100, cost: 30, review_count: 17 is_food: 0}
+None
+Activity{name: Ramen House Ryowa, unique_id: 1474, latitude: 37.393913, longitude: -122.079711, rating: 3, duration: 20, cost: 10, review_count: 1587 is_food: 0}
+None
+('sum', 'budget', 2) = (43, 50)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (5, 24)
+('sum', 'budget', 'aggregated') = 24
+('sum', 'food', 3) = (1, 1)
+('sum', 'budget', 0) = (8, 11)
+('sum', 'food', 2) = (1, 1)
+('sum', 'budget', 1) = (53, 14)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Picante, unique_id: 1435, latitude: 37.878309, longitude: -122.301181, rating: 3, duration: 30, cost: 30, review_count: 1261 is_food: 0}
+None
+Activity{name: Callahan's, unique_id: 911, latitude: 36.980171, longitude: -122.019969, rating: 4, duration: 20, cost: 10, review_count: 33 is_food: 0}
+None
+Activity{name: IFES Crab Cioppino Dinner, unique_id: 1390, latitude: 37.400402, longitude: -122.078895, rating: 4, duration: 100, cost: 0, review_count: 35 is_food: 0}
+None
+Activity{name: Italian Homemade Company, unique_id: 751, latitude: 37.801752, longitude: -122.411851, rating: 4, duration: 30, cost: 30, review_count: 852 is_food: 1}
+None
+('sum', 'budget', 2) = (36, 35)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 0)
+('sum', 'food', 0) = (1, 0)
+('sum', 'budget', 3) = (25, 0)
+('sum', 'budget', 'aggregated') = 0
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (51, 35)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (2, 46)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Shoreline Lake, unique_id: 814, latitude: 37.432627, longitude: -122.088138, rating: 4, duration: 180, cost: 0, review_count: 279 is_food: 0}
+None
+Activity{name: Cuetopia Billiard Cafe, unique_id: 924, latitude: 37.261610, longitude: -121.875010, rating: 4, duration: 30, cost: 30, review_count: 80 is_food: 0}
+None
+Activity{name: Andy Goldsworthy's Spire, unique_id: 1275, latitude: 37.792120, longitude: -122.459679, rating: 4, duration: 100, cost: 100, review_count: 8 is_food: 0}
+None
+Activity{name: The Gardener, unique_id: 1355, latitude: 37.869776, longitude: -122.300742, rating: 3, duration: 180, cost: 60, review_count: 57 is_food: 0}
+None
+('sum', 'budget', 2) = (40, 53)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (1, 48)
+('sum', 'budget', 'aggregated') = 48
+('sum', 'food', 3) = (1, 1)
+('sum', 'budget', 0) = (43, 2)
+('sum', 'food', 2) = (0, 1)
+('sum', 'budget', 1) = (57, 19)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: The Continental Bar, unique_id: 727, latitude: 37.330450, longitude: -121.886500, rating: 3, duration: 30, cost: 30, review_count: 160 is_food: 1}
+None
+Activity{name: The Regency Ballroom, unique_id: 1597, latitude: 37.787850, longitude: -122.421380, rating: 3, duration: 100, cost: 30, review_count: 444 is_food: 0}
+None
+Activity{name: Minato Japanese Restaurant, unique_id: 470, latitude: 37.349731, longitude: -121.893784, rating: 4, duration: 30, cost: 30, review_count: 710 is_food: 1}
+None
+Activity{name: Song Pa Korean Cuisine, unique_id: 179, latitude: 37.393890, longitude: -122.079500, rating: 3, duration: 30, cost: 30, review_count: 96 is_food: 1}
+None
+('sum', 'budget', 2) = (5, 14)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (10, 26)
+('sum', 'budget', 'aggregated') = 26
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (49, 13)
+('sum', 'food', 2) = (1, 0)
+('sum', 'budget', 1) = (14, 44)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Yummy Dumpling, unique_id: 1425, latitude: 37.763735, longitude: -122.476177, rating: 4, duration: 20, cost: 10, review_count: 74 is_food: 0}
+None
+Activity{name: Paul & Eddie's Monta Vista Inn, unique_id: 66, latitude: 37.323220, longitude: -122.051510, rating: 4, duration: 20, cost: 10, review_count: 113 is_food: 1}
+None
+Activity{name: The Hidden Vine, unique_id: 46, latitude: 37.795550, longitude: -122.400720, rating: 4, duration: 30, cost: 30, review_count: 737 is_food: 1}
+None
+Activity{name: Tacolicious, unique_id: 74, latitude: 37.443487, longitude: -122.161081, rating: 3, duration: 30, cost: 30, review_count: 681 is_food: 1}
+None
+('sum', 'budget', 2) = (46, 14)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 1)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (3, 14)
+('sum', 'budget', 'aggregated') = 14
+('sum', 'food', 3) = (1, 1)
+('sum', 'budget', 0) = (57, 39)
+('sum', 'food', 2) = (1, 1)
+('sum', 'budget', 1) = (3, 56)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Captain's, unique_id: 1052, latitude: 37.486809, longitude: -122.227539, rating: 3, duration: 120, cost: 30, review_count: 102 is_food: 0}
+None
+Activity{name: Sicilia In Bocca, unique_id: 646, latitude: 37.130203, longitude: -121.655327, rating: 4, duration: 30, cost: 30, review_count: 282 is_food: 1}
+None
+Activity{name: Pieology Pizzeria, unique_id: 1576, latitude: 37.552464, longitude: -121.978221, rating: 4, duration: 20, cost: 10, review_count: 481 is_food: 0}
+None
+Activity{name: Yoga Mayu, unique_id: 1252, latitude: 37.751100, longitude: -122.435360, rating: 4, duration: 120, cost: 0, review_count: 17 is_food: 0}
+None
+('sum', 'budget', 2) = (25, 35)
+('sum', 'food', 'aggregated') = 0
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (1, 1)
+('sum', 'budget', 3) = (27, 50)
+('sum', 'budget', 'aggregated') = 50
+('sum', 'food', 3) = (1, 0)
+('sum', 'budget', 0) = (6, 5)
+('sum', 'food', 2) = (1, 1)
+('sum', 'budget', 1) = (51, 46)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Hot Wok Bistro, unique_id: 514, latitude: 37.585693, longitude: -122.333130, rating: 4, duration: 20, cost: 10, review_count: 411 is_food: 1}
+None
+Activity{name: Miami Beach Club, unique_id: 872, latitude: 37.329520, longitude: -121.886120, rating: 3, duration: 30, cost: 30, review_count: 68 is_food: 0}
+None
+Activity{name: Cloverleaf Family Bowl, unique_id: 1005, latitude: 37.535042, longitude: -121.965263, rating: 4, duration: 100, cost: 0, review_count: 279 is_food: 0}
+None
+Activity{name: Blue Lagoon Cocktail Lounge, unique_id: 430, latitude: 36.970585, longitude: -122.025490, rating: 3, duration: 20, cost: 10, review_count: 144 is_food: 1}
+None
+('sum', 'budget', 2) = (46, 33)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 1)
+('sum', 'food', 0) = (1, 1)
+('sum', 'budget', 3) = (1, 48)
+('sum', 'budget', 'aggregated') = 48
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (32, 29)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (30, 29)
+

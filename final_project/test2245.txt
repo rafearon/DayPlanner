@@ -1,0 +1,82 @@
+Budget: 30
+Time: 12:00 - 18:00 (total of 360 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  15
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting backtrack
+ending backtrack
+Found 3 optimal assignments with weight 183.750000 in 617 operations
+First assignment took 21 operations
+all optimal assignments
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: San Gregorio Beach, unique_id: 100, latitude: 37.319073, longitude: -122.274272, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: Webb Ranch, unique_id: 101, latitude: 37.405820, longitude: -122.194094, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: The Willow Den, unique_id: 2, latitude: 37.314785, longitude: -121.905933, rating: 3, duration: 20, cost: 10, is_food: 1}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+('sum', 'budget', 2) = (0, 0)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (0, 10)
+('sum', 'budget', 'aggregated') = 10
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (0, 0)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (0, 0)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: San Gregorio Beach, unique_id: 100, latitude: 37.319073, longitude: -122.274272, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: Webb Ranch, unique_id: 101, latitude: 37.405820, longitude: -122.194094, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: Wild Wave Sport Fishing Charters, unique_id: 104, latitude: 37.808219, longitude: -122.416712, rating: 5, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: The Willow Den, unique_id: 2, latitude: 37.314785, longitude: -121.905933, rating: 3, duration: 20, cost: 10, is_food: 1}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+('sum', 'budget', 2) = (0, 0)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (0, 10)
+('sum', 'budget', 'aggregated') = 10
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (0, 0)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (0, 0)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: San Gregorio Beach, unique_id: 100, latitude: 37.319073, longitude: -122.274272, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: Webb Ranch, unique_id: 101, latitude: 37.405820, longitude: -122.194094, rating: 3, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: Guadalupe Oak Grove Park, unique_id: 110, latitude: 37.235974, longitude: -121.877701, rating: 5, duration: 180, cost: 0, is_food: 0}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+Activity{name: The Willow Den, unique_id: 2, latitude: 37.314785, longitude: -121.905933, rating: 3, duration: 20, cost: 10, is_food: 1}
+Time{duration: 0, a_latitude: 36.400000, a_longitude: -122.700000, b_latitude: 36.400000, b_longitude: -122.700000}
+('sum', 'budget', 2) = (0, 0)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (0, 10)
+('sum', 'budget', 'aggregated') = 10
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (0, 0)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (0, 0)
+

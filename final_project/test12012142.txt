@@ -1,0 +1,21 @@
+Budget: 60
+Time: 09:00 - 20:00 (total of 660 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  15
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting add review count constraints
+ending add review count constraints
+starting ICR
+Starting ICR candidate  0
+ERROR ASSIGNING INITIAL SLOTS, EXITING

@@ -1,87 +1,212 @@
-import collections, util, copy, math
+import collections, util, copy, math, random, sys
 
 import geopy.distance
 
-time_per_mile = 1 # minutes
+
+time_per_mile = 4 # minutes
 
 import collections, util, copy
 
-############################################################
-# Problem 0
-
-# Hint: Take a look at the CSP class and the CSP examples in util.py
-def create_chain_csp(n):
-    # same domain for each variable
-    domain = [0, 1]
-    # name variables as x_1, x_2, ..., x_n
-    # variables = ['x%d'%i for i in range(1, n+1)]
-    csp = util.CSP()
-    # Problem 0c
-    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        csp.add_variable(variable, domain)
-    if len(variables) <= 1: return csp
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        if i < len(variables) - 1:
-            next_variable = variables[i+1]
-            csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
-    # END_YOUR_CODE
-    return csp
-
-def create_ternary_test_csp(n):
-    # same domain for each variable
-    domain = [0, 1]
-    # name variables as x_1, x_2, ..., x_n
-    # variables = ['x%d'%i for i in range(1, n+1)]
-    csp = util.CSP()
-    # Problem 0c
-    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    for i in range(0, n):
-        # variable = variables[i]
-        csp.add_variable(i, domain)
-    csp.add_ternary_factor(0, 1, 2, lambda x, y, z: x + y + z == 2)
-    # if len(variables) <= 1: return csp
-    # for i in range(0, len(variables)):
-    #     variable = variables[i]
-    #     if i < len(variables) - 1:
-    #         next_variable = variables[i+1]
-    #         csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
-    # END_YOUR_CODE
-    return csp
 
 
-############################################################
-# Problem 1
 
-def create_nqueens_csp(n = 8):
-    """
-    Return an N-Queen problem on the board of size |n| * |n|.
-    You should call csp.add_variable() and csp.add_binary_factor().
+class ICRSearch():
 
-    @param n: number of queens, or the size of one dimension of the board.
 
-    @return csp: A CSP problem with correctly configured factor tables
-        such that it can be solved by a weighted CSP solver.
-    """
-    csp = util.CSP()
-    # Problem 1a
-    # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-    # queens encode column number
-    # encodes row number
-    options = []
-    for i in range (0, n):
-        options.append(i)
-    for i in range (0, n):
-        csp.add_variable(i, options)
-    if n <= 1: return csp
-    for i in range (0, n):
-        if i < n - 1:
-            for j in range(i+1, n):
-                csp.add_binary_factor(i, j, lambda x, y : (x-y) != 0 and (abs(x-y)) != abs(i-j))
-    # END_YOUR_CODE
-    return csp
+    def reset_results(self):
+        """
+        This function resets the statistics of the different aspects of the
+        CSP solver. We will be using the values here for grading, so please
+        do not make any modification to these variables.
+        """
+        # Keep track of the best assignment and weight found.
+        self.optimalAssignment = {}
+        self.optimalWeight = 0
+
+        # Keep track of the number of optimal assignments and assignments. These
+        # two values should be identical when the CSP is unweighted or only has binary
+        # weights.
+        self.numOptimalAssignments = 0
+        self.numAssignments = 0
+
+        # Keep track of the number of times backtrack() gets called.
+        self.numOperations = 0
+
+        # Keep track of the number of operations to get to the very first successful
+        # assignment (doesn't have to be optimal).
+        self.firstAssignmentNumOperations = 0
+
+        # List of all solutions found.
+        self.allAssignments = []
+
+        # List of all optimal solutions found
+        self.allOptimalAssignments = []
+        self.previousWeight = 0
+
+    def print_stats(self):
+        """
+        Prints a message summarizing the outcome of the solver.
+        """
+        if self.optimalAssignment:
+            print "Found %d optimal assignments with weight %f in %d operations" % \
+                (self.numOptimalAssignments, self.optimalWeight, self.numOperations)
+            print "First assignment took %d operations" % self.firstAssignmentNumOperations
+        else:
+            print "No solution was found."
+
+    def get_delta_weight(self, assignment, var, val):
+        """
+        Given a CSP, a partial assignment, and a proposed new value for a variable,
+        return the change of weights after assigning the variable with the proposed
+        value.
+
+        @param assignment: A dictionary of current assignment. Unassigned variables
+            do not have entries, while an assigned variable has the assigned value
+            as value in dictionary. e.g. if the domain of the variable A is [5,6],
+            and 6 was assigned to it, then assignment[A] == 6.
+        @param var: name of an unassigned variable.
+        @param val: the proposed value.
+
+        @return w: Change in weights as a result of the proposed assignment. This
+            will be used as a multiplier on the current weight.
+        """
+        assert var not in assignment
+        w = 1.0
+        if self.csp.unaryFactors[var]:
+            w *= self.csp.unaryFactors[var][val]
+            if w == 0: return w
+        for var2, factor in self.csp.binaryFactors[var].iteritems():
+            if var2 not in assignment: continue  # Not assigned yet
+            w *= factor[val][assignment[var2]]
+            if w == 0: return w
+        if w == float('inf'):
+            print "assignment = ", assigment
+            print "var = ", var
+            print "val = ", val
+
+        return w
+
+    def solve(self, csp, activities, genre, num_assignments = 10):
+        """
+        Solves the given weighted CSP using heuristics as specified in the
+        parameter. Note that unlike a typical unweighted CSP where the search
+        terminates when one solution is found, we want this function to find
+        all possible assignments. The results are stored in the variables
+        described in reset_result().
+
+        @param csp: A weighted CSP.
+        @param mcv: When enabled, Most Constrained Variable heuristics is used.
+        @param ac3: When enabled, AC-3 will be used after each assignment of an
+            variable is made.
+        """
+        # CSP to be solved.
+        self.csp = csp
+        self.activities = activities
+        self.genre = genre
+
+
+       
+        # Reset solutions from previous search.
+        self.reset_results()
+
+        # The dictionary of domains of every variable in the CSP.
+        self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
+
+        # Set maximum number of assignments
+        self.num_assignments = num_assignments
+
+        print "starting ICR"
+        # Perform backtracking search.
+       
+        for i in range (0, self.num_assignments):
+            print "Starting ICR candidate ", i
+            self.cutoff = 30
+            self.curr_weight = 1.0
+            self.icr_iterations = 0
+            self.prev_weight = -1.0
+            self.icr_iterations = 0
+            startAssignment = self.icr_init()
+            while self.icr_iterations < self.cutoff: #and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
+                #print "Round", self.icr_iterations
+                self.icr(startAssignment)
+                self.icr_iterations += 1
+            self.allAssignments.append(startAssignment)
+            print "TOTAL WEIGHT OF ASSIGNMENT ", i , " = ", self.curr_weight
+
+        print "ending ICR"
+        # Print summary of solutions.
+        self.print_stats()
+
+
+    def icr_init(self):
+        newAssignment = {}
+        start_weight = 1
+        for var_idx, var in enumerate(self.csp.variables):
+                ordered_values = self.domains[var]
+                success = False
+                contains_food = False
+                for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):
+                    val = random.choice(ordered_values)
+                    if self.check_for_food(val) and contains_food:
+                        print "EXTRA FOOD IN INIT, SKIPPING"
+                        continue
+                    delta_weight = self.get_delta_weight(newAssignment, var, val)
+                    #print delta_weight
+                    if delta_weight >= 0:
+                        newAssignment[var] = val
+                        if delta_weight == 0:
+                            delta_weight = 1
+                        start_weight *= delta_weight
+                        success = True
+                        if self.check_for_food(val):
+                            contains_food = True
+                        break    
+                if not success:
+                    newAssignment[var] = None
+        #print newAssignment
+        self.curr_weight = start_weight
+        return newAssignment
+
+
+    def icr(self, assignment):
+        assignment_contains_food = False
+        for var in assignment:
+            ordered_values = self.domains[var]
+            for val in ordered_values:
+                val_has_food = self.check_for_food(val)
+                if(assignment_contains_food and val_has_food):
+                    "FOOD IN REFRESH, SKIPPING"
+                    continue
+                assignCopy = copy.copy(assignment)
+                del assignCopy[var]
+                deltaWeight = self.get_delta_weight(assignCopy, var, val)
+                #print deltaWeight
+                if deltaWeight > 0:
+                    assignment[var] = val
+                    self.prev_weight = self.curr_weight
+                    self.curr_weight *= deltaWeight
+                    if val_has_food:
+                        assigment_contains_food = val_has_food
+
+    def check_for_food(self, val_num):
+        try:
+            value = self.activities[self.genre][val_num]
+            #print value['is_food']
+            if value['is_food'] == True or value['is_food'] == 1:
+                #print "FOOD FOUND"
+
+                return True
+            else:
+                return False
+        except: 
+            return False
+
+
+
+
+        
+
+
 
 class BeamSearch():
     def reset_results(self):
@@ -190,6 +315,8 @@ class BeamSearch():
         # Print summary of solutions.
         #self.print_stats()
 
+
+
     def beamsearch(self):
         """
         Perform beam search to find k possible solutions to
@@ -207,6 +334,8 @@ class BeamSearch():
         for var in self.get_ordered_vars():
             extended = self.extend_assignments(assignments, var)
             assignments = self.prune_assignments(extended)
+            #print extended
+            #print assignments
             num_assigned += 1
 
         self.allAssignments = [a for a, w in assignments]
@@ -225,7 +354,8 @@ class BeamSearch():
                 deltaWeight = self.get_delta_weight(assignment, var, val)
                 if deltaWeight > 0:
                     # Copy assignment with new var, val pair into extended assignments
-                    newAssignment = assignment.copy()
+                    #print "dw > 0"
+                    newAssignment = copy.deepcopy(assignment)
                     newAssignment[var] = val
                     newWeight = weight * deltaWeight
                     extended_assignments.append((newAssignment, newWeight))
@@ -238,8 +368,12 @@ class BeamSearch():
         """
         # Sort assignments by weight
         assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
+
         # Return top k assignments
-        return assignments[:self.k]
+        #print len(assignments)
+        new_assignments = assignments[:self.k]
+        return new_assignments
+
 
     def get_ordered_vars(self):
         num_slots = 11
@@ -590,10 +724,14 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 11 # always keep this odd!
-        self.max_travel_time = 10 #mins
+        self.max_travel_time = 30 #mins
         self.home = activities['home'] #dict 
 
         print "max travel time is ", self.max_travel_time
+
+
+    def get_activity_by_key(self, key):
+        return self.activities[self.genre][key]
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"

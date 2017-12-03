@@ -1,12 +1,12 @@
 # Start and end time
-start_time 9:00
-end_time 20:00
+start_time 12:00
+end_time 18:00
 
 # meals (yes or no)
 meals yes
 
 # budget
-budget 60
+budget 30
 
 # genre (thrill, indoors, and outdoors)
 genre thrill
