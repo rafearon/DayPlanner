@@ -78,7 +78,8 @@ INTELLECT = [
 'spas',
 'concerts',
 'shopping',
-'malls'
+'malls',
+'tour'
 ]
 
 
@@ -106,8 +107,7 @@ THRILL = [
 'surfing',
 'tubing',
 'zorbing',
-'haunted houses',
-'sports'
+'haunted houses'
 ]
 
 OUTDOORS = [
