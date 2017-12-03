@@ -484,6 +484,13 @@ class Profile:
         print "Food: %s" % ('yes' if self.want_food else 'no')
         print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
 
+def print_all_scheduling_solutions_beam(solutions, profile, ac):
+    if solutions is None: return
+    for s, w in solutions:
+        print_scheduling_solution(s, profile, ac)
+        print "WEIGHT WAS ", w
+        print
+
 def print_all_scheduling_solutions(solutions, profile, ac):
     if solutions is None: return
     for s in solutions:

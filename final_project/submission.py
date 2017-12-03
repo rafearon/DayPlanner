@@ -1,10 +1,10 @@
-import collections, util, copy, math
-
+import collections, util, copy
+import math
+from math import *
 import geopy.distance
+import collections, util, copy
 
 time_per_mile = 2 # minutes
-
-import collections, util, copy
 
 ############################################################
 # Problem 0
@@ -108,7 +108,7 @@ class BeamSearch():
         self.firstAssignmentNumOperations = 0
 
         # List of all solutions found.
-        self.allAssignments = []
+        self.allAssignments = {}
 
         # List of all optimal solutions found
         self.allOptimalAssignments = []
@@ -220,7 +220,7 @@ class BeamSearch():
                 print "no assignments after assigning", var
                 break
 
-        self.allAssignments = [a for a, w in assignments]
+        self.allAssignments = assignments #[a for a, w in assignments]
 
     def extend_assignments(self, assignments, var):
         """
@@ -256,35 +256,34 @@ class BeamSearch():
         num_slots = 11
         ordered_vars = []
         # food variables
-        ordered_vars.extend([('sum', 'food', 'aggregated'),
-            ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
-            ('sum', 'food', 3), ('sum', 'food', 4)])
+        # ordered_vars.extend([('sum', 'food', 'aggregated'),
+        #     ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
+        #     ('sum', 'food', 3), ('sum', 'food', 4)])
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+        # time vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
         # budget vars
         ordered_vars.extend([
             ('sum', 'budget', 0),
             ('sum', 'budget', 1),
             ('sum', 'budget', 2),
             ('sum', 'budget', 3),
-            ('sum', 'budget', 4),
             ('sum', 'budget', 'aggregated')])
 
-        ordered_vars.extend([
-            ('sum', 'act_time', 'aggregated'),
-            ('sum', 'travel_time', 'aggregated'),
-            ('sum', 'act_time', 4),
-            ('sum', 'act_time', 3),
-            ('sum', 'act_time', 2),
-            ('sum', 'act_time', 1),
-            ('sum', 'act_time', 0),
-            ('sum', 'travel_time', 4),
-            ('sum', 'travel_time', 3),
-            ('sum', 'travel_time', 2),
-            ('sum', 'travel_time', 1),
-            ('sum', 'travel_time', 0)])
-        # activity vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
-        # time vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
+        # ordered_vars.extend([
+        #     ('sum', 'act_time', 'aggregated'),
+        #     ('sum', 'travel_time', 'aggregated'),
+        #     ('sum', 'act_time', 4),
+        #     ('sum', 'act_time', 3),
+        #     ('sum', 'act_time', 2),
+        #     ('sum', 'act_time', 1),
+        #     ('sum', 'act_time', 0),
+        #     ('sum', 'travel_time', 4),
+        #     ('sum', 'travel_time', 3),
+        #     ('sum', 'travel_time', 2),
+        #     ('sum', 'travel_time', 1),
+        #     ('sum', 'travel_time', 0)])
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
@@ -581,6 +580,25 @@ def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
     distance = geopy.distance.vincenty(coords_1, coords_2).miles
     return distance*time_per_mile
 
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r
+
+def haversine_miles(lat1, lon1, lat2, lon2):
+    return haversine(lat1, lon1, lat2, lon2) * 0.62137119 * time_per_mile
+
 
 def get_sum_variable(csp, name, variables, maxSum, factor, increment):
     domain = [(a, b) for a in range(0, maxSum + 1, increment) for b in range(0, maxSum + 1, increment)]
@@ -739,11 +757,11 @@ class SchedulingCSPConstructor():
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a == -1:
-                        return b == int(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(haversine_miles(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
                     if c == -1:
-                        return b == int(find_travel_time(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude))
+                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude))
                     else:
-                        return b == int(find_travel_time(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constraints"
@@ -754,7 +772,7 @@ class SchedulingCSPConstructor():
         for i in range(1, self.num_slots-1):
             if i % 2 == 0:
                 def factor(a):
-                    return self.act_and_rest[a].rating
+                    return self.act_and_rest[a].rating/5
                 csp.add_unary_factor(i, factor)
         print "ending add travel time constraints"
 
