@@ -541,6 +541,7 @@ def parse_schedule(schedule):
             val = (int(m.group(4)), int(m.group(5)))
             assignment[var] = val
             continue
+        # Check if line is time slot variable
         try:
             val = int(line)
             assignment[i] = val
