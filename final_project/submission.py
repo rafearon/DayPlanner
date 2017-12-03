@@ -554,10 +554,10 @@ def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
     return distance*time_per_mile
 
 
-def get_sum_variable(csp, name, variables, maxSum, factor):
-    domain = [(a, b) for a in range(0, maxSum + 1) for b in range(0, maxSum + 1)]
+def get_sum_variable(csp, name, variables, maxSum, factor, increment):
+    domain = [(a, b) for a in range(0, maxSum + 1, increment) for b in range(0, maxSum + 1, increment)]
     result = ('sum', name, 'aggregated')
-    csp.add_variable(result, [a for a in range(0, maxSum + 1)])
+    csp.add_variable(result, [a for a in range(0, maxSum + 1, increment)])
 
     # no input variable, result sum should be 0
     if len(variables) == 0:
@@ -590,7 +590,7 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 11 # always keep this odd!
-        self.max_travel_time = 30 #mins
+        self.max_travel_time = 10 #mins
         self.home = activities['home'] #dict 
 
         print "max travel time is ", self.max_travel_time
@@ -647,7 +647,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = self.activities[a].cost
+                val = int(math.ceil(self.activities[a].cost / 10)) * 10
             return b[1] == b[0] + val
 
         variables = []
@@ -655,7 +655,7 @@ class SchedulingCSPConstructor():
             if i != 0 and i % 2 == 0:
                 variables.append(i)
 
-        result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor)
+        result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor, 10)
         csp.add_unary_factor(result, lambda val: val <= self.profile.budget)
         print "ending add budget constraints"
 
@@ -665,7 +665,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = self.activities[a].duration
+                val = int(math.ceil(self.activities[a].duration / 10)) * 10
             return b[1] == b[0] + val
 
         activity_variables = []
@@ -675,8 +675,8 @@ class SchedulingCSPConstructor():
                 activity_variables.append(i)
             if i % 2 != 0 and i != 0:
                 time_variables.append(i)
-        result1 = get_sum_variable(csp, "act_time", activity_variables, self.profile.total_time, factor)
-        result2 = get_sum_variable(csp, "travel_time", activity_variables, self.profile.total_time, factor)
+        result1 = get_sum_variable(csp, "act_time", activity_variables, self.profile.total_time, factor, 10)
+        result2 = get_sum_variable(csp, "travel_time", activity_variables, self.profile.total_time, factor, 10)
         csp.add_binary_factor(result1, result2, lambda val1, val2: val1 + val2 <= self.profile.total_time)
         print "ending time contraints"
 
@@ -722,7 +722,7 @@ class SchedulingCSPConstructor():
             if i != 0 and i % 2 == 0:
                 variables.append(i)
         
-        result = get_sum_variable(csp, "food", variables, num_restaraunts, factor)
+        result = get_sum_variable(csp, "food", variables, num_restaraunts, factor, 1)
         csp.add_unary_factor(result, lambda val: val == num_restaraunts)
         print "ending add food constaints"
 
@@ -737,6 +737,8 @@ class SchedulingCSPConstructor():
                     if a == -1:
                         return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                     else:
+                        # print a, b, c
+                        # print self.activities
                         return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
