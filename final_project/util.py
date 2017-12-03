@@ -8,7 +8,7 @@ import googlemaps
 import geopy
 from time import sleep
 
-LIMIT_NUM_ACTIVITIES_PER_FILE = 100
+LIMIT_NUM_ACTIVITIES_PER_FILE = 1000
 
 class Time(object):
     duration = 0
@@ -281,6 +281,10 @@ def get_or_variable(csp, name, variables, value):
 # self.review_count: number of reviews
 # self.is_food: 1 if restaurant else 0
 class Activity:
+
+    
+    
+
     def __init__(self, unique_id, info, is_restaurant):
         self.name = info['name']
         self.unique_id = unique_id
@@ -310,6 +314,8 @@ class Activity:
             return {'latitude': self.latitude, 'longitude': self.longitude}
         if index == 'review_count':
             return self.review_count
+        if index == 'is_food':
+            return self.is_food
 
 
 # Information about all the activities
@@ -681,7 +687,7 @@ class ScheduleScore:
         def sum_activity_scores(self):
             score = 0
             for key, value in self.schedule.items():
-                if isinstance(key, (int, long)):
+                if isinstance(key, (int, long)) and value is not None:
                         if key == 0:
                             pass
                         elif key % 2 != 0 and key > 1 and key < 9:

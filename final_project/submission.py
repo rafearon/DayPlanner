@@ -7,62 +7,6 @@ time_per_mile = 4 # minutes
 import collections, util, copy
 
 
-############################################################
-# Problem 0
-
-# Hint: Take a look at the CSP class and the CSP examples in util.py
-def create_chain_csp(n):
-    # same domain for each variable
-    domain = [0, 1]
-    # name variables as x_1, x_2, ..., x_n
-    variables = ['x%d'%i for i in range(1, n+1)]
-    csp = util.CSP()
-    # Problem 0c
-    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        csp.add_variable(variable, domain)
-    if len(variables) <= 1: return csp
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        if i < len(variables) - 1:
-            next_variable = variables[i+1]
-            csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
-    # END_YOUR_CODE
-    return csp
-
-
-############################################################
-# Problem 1
-
-def create_nqueens_csp(n = 8):
-    """
-    Return an N-Queen problem on the board of size |n| * |n|.
-    You should call csp.add_variable() and csp.add_binary_factor().
-
-    @param n: number of queens, or the size of one dimension of the board.
-
-    @return csp: A CSP problem with correctly configured factor tables
-        such that it can be solved by a weighted CSP solver.
-    """
-    csp = util.CSP()
-    # Problem 1a
-    # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-    # queens encode column number
-    # encodes row number
-    options = []
-    for i in range (0, n):
-        options.append(i)
-    for i in range (0, n):
-        csp.add_variable(i, options)
-    if n <= 1: return csp
-    for i in range (0, n):
-        if i < n - 1:
-            for j in range(i+1, n):
-                csp.add_binary_factor(i, j, lambda x, y : (x-y) != 0 and (abs(x-y)) != abs(i-j))
-    # END_YOUR_CODE
-    return csp
-
 
 
 class ICRSearch():
@@ -134,9 +78,14 @@ class ICRSearch():
             if var2 not in assignment: continue  # Not assigned yet
             w *= factor[val][assignment[var2]]
             if w == 0: return w
+        if w == float('inf'):
+            print "assignment = ", assigment
+            print "var = ", var
+            print "val = ", val
+
         return w
 
-    def solve(self, csp, mcv = False, ac3 = False, num_assignments = 10):
+    def solve(self, csp, activities, genre, num_assignments = 10):
         """
         Solves the given weighted CSP using heuristics as specified in the
         parameter. Note that unlike a typical unweighted CSP where the search
@@ -151,11 +100,11 @@ class ICRSearch():
         """
         # CSP to be solved.
         self.csp = csp
+        self.activities = activities
+        self.genre = genre
 
-        # Set the search heuristics requested asked.
-        self.mcv = mcv
-        self.ac3 = ac3
 
+       
         # Reset solutions from previous search.
         self.reset_results()
 
@@ -176,7 +125,7 @@ class ICRSearch():
             self.prev_weight = -1.0
             self.icr_iterations = 0
             startAssignment = self.icr_init()
-            while self.icr_iterations < self.cutoff and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
+            while self.icr_iterations < self.cutoff: #and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
                 #print "Round", self.icr_iterations
                 self.icr(startAssignment)
                 self.icr_iterations += 1
@@ -194,8 +143,11 @@ class ICRSearch():
         for var_idx, var in enumerate(self.csp.variables):
                 ordered_values = self.domains[var]
                 success = False
+                contains_food = False
                 for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):
                     val = random.choice(ordered_values)
+                    if self.check_for_food(val) and contains_food:
+                        continue
                     delta_weight = self.get_delta_weight(newAssignment, var, val)
                     #print delta_weight
                     if delta_weight >= 0:
@@ -204,7 +156,9 @@ class ICRSearch():
                             delta_weight = 1
                         start_weight *= delta_weight
                         success = True
-                        break
+                        if self.check_for_food(val):
+                            contains_food = True
+                        break    
                 if not success:
                     newAssignment[var] = None
         #print newAssignment
@@ -213,9 +167,13 @@ class ICRSearch():
 
 
     def icr(self, assignment):
+        assignment_contains_food = False
         for var in assignment:
             ordered_values = self.domains[var]
             for val in ordered_values:
+                val_has_food = self.check_for_food(val)
+                if(assignment_contains_food and val_has_food):
+                    continue
                 assignCopy = copy.copy(assignment)
                 del assignCopy[var]
                 deltaWeight = self.get_delta_weight(assignCopy, var, val)
@@ -224,99 +182,27 @@ class ICRSearch():
                     assignment[var] = val
                     self.prev_weight = self.curr_weight
                     self.curr_weight *= deltaWeight
+                    if val_has_food:
+                        assigment_contains_food = val_has_food
+
+    def check_for_food(self, val_num):
+        try:
+            value = self.activities[self.genre][val_num]
+            #print value['is_food']
+            if value['is_food'] == True or value['is_food'] == 1:
+                #print "FOOD FOUND"
+
+                return True
+            else:
+                return False
+        except: 
+            return False
 
 
 
 
         
 
-
-
-
-    def get_unassigned_variable(self, assignment):
-        """
-        Given a partial assignment, return a currently unassigned variable.
-
-        @param assignment: A dictionary of current assignment. This is the same as
-            what you've seen so far.
-
-        @return var: a currently unassigned variable.
-        """
-
-        if not self.mcv:
-            # Select a variable without any heuristics.
-            for var in self.csp.variables:
-                if var not in assignment: return var
-        else:
-            # Problem 1b
-            # Heuristic: most constrained variable (MCV)
-            # Select a variable with the least number of remaining domain values.
-            # Hint: given var, self.domains[var] gives you all the possible values
-            # Hint: get_delta_weight gives the change in weights given a partial
-            #       assignment, a variable, and a proposed value to this variable
-            # Hint: for ties, choose the variable with lowest index in self.csp.variables
-            # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-            min_num = float("inf")
-            min_var = self.csp.variables[0]
-            num = 0
-            for var in self.csp.variables:
-                num = 0
-                if var not in assignment:
-                    values = self.domains[var]
-                    for value in values:
-                        if self.get_delta_weight(assignment, var, value) != 0:
-                            num = num+1
-                    if num < min_num:
-                        min_num = num
-                        min_var = var
-            return min_var
-            # END_YOUR_CODE
-
-    def arc_consistency_check(self, var):
-        """
-        Perform the AC-3 algorithm. The goal is to reduce the size of the
-        domain values for the unassigned variables based on arc consistency.
-
-        @param var: The variable whose value has just been set.
-        """
-        # Problem 1c
-        # Hint: How to get variables neighboring variable |var|?
-        # => for var2 in self.csp.get_neighbor_vars(var):
-        #       # use var2
-        #
-        # Hint: How to check if a value or two values are inconsistent?
-        # - For unary factors
-        #   => self.csp.unaryFactors[var1][val1] == 0
-        #
-        # - For binary factors
-        #   => self.csp.binaryFactors[var1][var2][val1][val2] == 0
-        #   (self.csp.binaryFactors[var1][var2] returns a nested dict of all assignments)
-
-        # BEGIN_YOUR_CODE (our solution is 20 lines of code, but don't worry if you deviate from this)
-        variables = [var]
-        while len(variables) > 0:
-            var1 = variables.pop(0)
-            for var2 in self.csp.get_neighbor_vars(var1):
-                remove_vals = []
-                for val2 in self.domains[var2]:
-                    should_remove = 1
-                    for val1 in self.domains[var1]:
-                        if self.csp.binaryFactors[var1][var2][val1][val2] != 0:
-                            should_remove = 0
-                    if should_remove == 1:
-                        remove_vals.append(val2)
-                curr_domain = self.domains[var2]
-                new_domain = []
-                pruned_domain = 0
-                for val in curr_domain:
-                    if val not in remove_vals:
-                        new_domain.append(val)
-                    else:
-                        pruned_domain = 1
-                self.domains[var2] = new_domain
-                if pruned_domain:
-                    # add all of its neighbors
-                    variables.append(var2)
 
 
 
@@ -898,11 +784,16 @@ class SchedulingCSPConstructor():
     def __init__(self, activities, profile):
         self.activities = activities[profile.genre] # dict
         self.profile = profile
+        self.genre = profile.genre
         self.num_slots = 10 # always keep this even!
         self.max_travel_time = 60 #mins
         self.home = activities['home'] #dict 
 
         print "max travel time is ", self.max_travel_time
+
+
+    def get_activity_by_key(self, key):
+        return self.activities[self.genre][key]
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
