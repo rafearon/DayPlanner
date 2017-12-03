@@ -152,7 +152,7 @@ class ICRSearch():
                         continue
                     delta_weight = self.get_delta_weight(newAssignment, var, val)
                     #print delta_weight
-                    if delta_weight >= 0:
+                    if delta_weight > 1:
                         newAssignment[var] = val
                         if delta_weight == 0:
                             delta_weight = 1
@@ -701,6 +701,9 @@ get_or_variable = util.get_or_variable
 
 
 def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
+	return util.haversine_miles(a_latitude, a_longitude, b_latitude, b_longitude)
+
+def find_travel_time_geopy(a_latitude, a_longitude, b_latitude, b_longitude):
     coords_1 = (a_latitude, a_longitude)
     coords_2 = (b_latitude, b_longitude)
     distance = geopy.distance.vincenty(coords_1, coords_2).miles
@@ -943,6 +946,6 @@ class SchedulingCSPConstructor():
         self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
-        self.add_weighted_travel_time_constraints(csp)
+        #self.add_time_constraints(csp)
+        #self.add_weighted_travel_time_constraints(csp)
         return csp
