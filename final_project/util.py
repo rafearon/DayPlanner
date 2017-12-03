@@ -517,3 +517,55 @@ def print_scheduling_solution(solution, profile, ac):
     for key, value in solution.items():
         if not isinstance(key, (int, long)):
             print key, '=', value
+
+def parse_schedule(schedule):
+    assignment = {}
+    for i, line in enumerate(schedule.splitlines()):
+        # Check if line shows an activity
+        m = re.match('.*Activity\{.+, unique_id: (.+), latitude.+\}.*', line)
+        if m:
+            unique_id = int(m.group(1))
+            assignment[i] = unique_id
+            continue
+        # Check if line is aggregate sum variable
+        m = re.match('.*\\(\'(sum)\', \'(.+)\', \'(aggregated)\'\) = (.+).*', line)
+        if m:
+            var = (m.group(1), m.group(2), m.group(3))
+            val = int(m.group(4))
+            assignment[var] = val
+            continue
+        # Check if line is aux sum variable
+        m = re.match('.*\\(\'(sum)\', \'(.+)\', (.+)\) = \((.+), (.+)\).*', line)
+        if m:
+            var = (m.group(1), m.group(2), int(m.group(3)))
+            val = (int(m.group(4)), int(m.group(5)))
+            assignment[var] = val
+            continue
+        try:
+            val = int(line)
+            assignment[i] = val
+        except:
+            continue
+
+    return assignment
+
+def parse_backtrack_schedule():
+    schedule = "\
+        The above assignment corresponds to the following itinerary\n\
+        Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}\n\
+        20\n\
+        Activity{name: Webb Ranch, unique_id: 101, latitude: 37.405820, longitude: -122.194094, rating: 3, duration: 180, cost: 0, review_count: 63 is_food: 0}\n\
+        20\n\
+        Activity{name: Cook's Seafood Restaurant & Market, unique_id: 36, latitude: 37.451410, longitude: -122.179660, rating: 4, duration: 30, cost: 30, review_count: 429 is_food: 1}\n\
+        30\n\
+        Activity{name: Rancho San Antonio Open Space Preserve, unique_id: 194, latitude: 37.332879, longitude: -122.087098, rating: 4, duration: 180, cost: 0, review_count: 597 is_food: 0}\n\
+        30\n\
+        Activity{name: Back A Yard Caribbean American Grill, unique_id: 85, latitude: 37.472900, longitude: -122.154948, rating: 4, duration: 30, cost: 30, review_count: 1759 is_food: 1}\n\
+        20\n\
+        Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}\n\
+        ('sum', 'budget', 3) = (60, 100)\n\
+        ('sum', 'budget', 'aggregated') = 100\n\
+        ('sum', 'budget', 0) = (0, 10)\n\
+        ('sum', 'budget', 2) = (50, 60)\n\
+        ('sum', 'budget', 1) = (10, 50)"
+    return parse_schedule(schedule)
