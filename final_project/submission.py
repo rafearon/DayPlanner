@@ -263,21 +263,20 @@ class BeamSearch():
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
-
-        ordered_vars.extend([
-            ('sum', 'act_time', 0),
-            ('sum', 'act_time', 1),
-            ('sum', 'act_time', 2),
-            ('sum', 'act_time', 3),
-            ('sum', 'act_time', 4),
-            ('sum', 'act_time', 'aggregated'),
-            ('sum', 'travel_time', 0),
-            ('sum', 'travel_time', 1),
-            ('sum', 'travel_time', 2),
-            ('sum', 'travel_time', 3),
-            ('sum', 'travel_time', 4),
-            ('sum', 'travel_time', 'aggregated')
-            ])
+        # ordered_vars.extend([
+        #     ('sum', 'act_time', 0),
+        #     ('sum', 'act_time', 1),
+        #     ('sum', 'act_time', 2),
+        #     ('sum', 'act_time', 3),
+        #     ('sum', 'act_time', 4),
+        #     ('sum', 'act_time', 'aggregated'),
+        #     ('sum', 'travel_time', 0),
+        #     ('sum', 'travel_time', 1),
+        #     ('sum', 'travel_time', 2),
+        #     ('sum', 'travel_time', 3),
+        #     ('sum', 'travel_time', 4),
+        #     ('sum', 'travel_time', 'aggregated')
+        #     ])
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
@@ -728,11 +727,11 @@ class SchedulingCSPConstructor():
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a is None or b is None or c is None:
-                        return 0.5
+                        return 0.2
                     if a == -1:
-                        return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                        return b == int(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
                     else:
-                        return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                        return b == int(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
@@ -771,7 +770,7 @@ class SchedulingCSPConstructor():
             def factor(a):
                 if a is None:
                     return 0.2
-                return 100
+                return 1
             csp.add_unary_factor(i, factor)
         print "ending add_penalize_none_constraints"
 
@@ -789,7 +788,7 @@ class SchedulingCSPConstructor():
         self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
-        self.add_weighted_travel_time_constraints(csp)
+        # self.add_time_constraints(csp)
+        # self.add_weighted_travel_time_constraints(csp)
         self.add_penalize_none_constraints(csp)
         return csp
