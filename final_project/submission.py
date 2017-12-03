@@ -732,14 +732,6 @@ class SchedulingCSPConstructor():
                     if a == -1:
                         return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                     else:
-                        # print a, b, c
-                        # print self.activities
-                        print "HI THERE"
-                        print a
-                        print b
-                        print c
-                        print self.activities[a]
-                        print self.activities[c]
                         return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
@@ -773,6 +765,16 @@ class SchedulingCSPConstructor():
                 csp.add_unary_factor(i, factor)
         print "ending add review count constraints"
 
+    def add_penalize_none_constraints(self, csp):
+        print "starting add_penalize_none_constraints"
+        for i in range(1, self.num_slots):
+            def factor(a):
+                if a is None:
+                    return 0.2
+                return 100
+            csp.add_unary_factor(i, factor)
+        print "ending add_penalize_none_constraints"
+
     def get_basic_csp(self):
         """
         Return a CSP that only enforces the basic budget constraints
@@ -789,4 +791,5 @@ class SchedulingCSPConstructor():
         self.add_slot_travel_time_constraints(csp)
         self.add_time_constraints(csp)
         self.add_weighted_travel_time_constraints(csp)
+        self.add_penalize_none_constraints(csp)
         return csp
