@@ -351,7 +351,10 @@ class Activity:
         self.latitude = float(info['coordinates']['latitude'])
         self.longitude = float(info['coordinates']['longitude'])
         self.rating = float(info['rating'])
-        self.duration = int(info['time_spent_minutes'])
+        try:
+            self.duration = int(info['time_spent_minutes'])
+        except:
+            self.duration = 0
         self.cost = Price[info['price'].replace("$", "m")].value if 'price' in info else 0
         self.review_count = int(info['review_count'])
         self.is_food = is_restaurant
@@ -626,14 +629,14 @@ class ActivityScore:
 
     def yelp_score_reward_nps(self, score):
             if score >= 4:
-                return score * self.yelp_score_norm
+                return score**2 * self.yelp_score_norm
             if score < 3:
                 return -score * self.yelp_score_norm
             else:
                 return 0
 
     def review_counts_reward(self, counts):
-        return math.log10(counts)
+        return math.log(counts, self.review_counts_factor)
 
 
     def get_score(self):
@@ -654,10 +657,11 @@ class DriveScore:
 
     def __init__(self, drive_activity):
             self.drive_activity = drive_activity
-            self.drive_score_norm = -0.7
+            self.drive_score_norm = -0.005
 
 
-
+    def get_drive_score(self):
+        return self.drive_score_norm * (self.drive_activity.get_drive_time())**2
 
     def drive_time_cost(self, time):
             return time * self.drive_score_norm
@@ -700,7 +704,7 @@ class ScheduleScore:
 
 
 
-        def __init__(self, schedule, activities=None, food = False, baseline = False):
+        def __init__(self, schedule, activities=None, food = False, baseline = False, manual = False):
             self.schedule = schedule
             self.activities = activities
             self.activity_score = 0
@@ -708,12 +712,28 @@ class ScheduleScore:
             self.total_score = 0
             self.food_required = food
             self.baseline = baseline
-            if not self.baseline:
-                self.sum_activity_scores()
-            else:
+            self.manual = manual
+            if self.manual:
+                self.sum_manual_scores()
+            elif self.baseline:
                 self.sum_activity_scores_baseline()
                 self.sum_drive_scores_baseline()
+            else:
+                self.sum_activity_scores()
             self.total_score = self.activity_score + self.drive_score
+
+
+
+
+
+        def sum_manual_scores(self):
+            for idx, activity in enumerate(self.schedule):
+                if idx % 2 == 0 and idx > 0 and idx != len(self.schedule) - 1:
+                    ac = ActivityScore(activity)
+                    self.activity_score += ac.get_score()
+                elif idx % 2 != 0:
+                    ds = DriveScore(activity)
+                    self.drive_score += ds.get_drive_score()
 
 
 

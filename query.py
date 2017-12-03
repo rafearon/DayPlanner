@@ -133,12 +133,12 @@ FROMMERS_SEARCHES = [
 "Alcatraz",
 "Pier 39",
 "The Crepe Cafe",
-"The Exploratorium",
+"Exploratorium",
 "Gott's Roadside", 
 "Golden Gate Bridge",
 "Bar Bocce",
-"The Musee Mechanique",
-"Ghirardelli",
+"Musée Mécanique",
+"Ghirardelli Ice Cream",
 "Nob Hill",
 "Cable Car Museum",
 "Chinatown",
@@ -149,20 +149,19 @@ FROMMERS_SEARCHES = [
 "North Beach",
 "Mario's Bohemian Cigar Store"
 "Original Joe's"
-"Swann's Oyster Depot",
+"Swan Oyster Depot",
 "Club Fugazi"
 ]
 
 ONLINE_AUTO_SEARCH_SF = [
-"Handlery Union Square",
-"Three 9 Eight Brasserie",
+"Handlery Union Square Hotel",
+"Marlowe",
 "Samovar Tea Lounge",
 "XOX Truffles",
 "Del Popolo",
 "Luce",
 "Palace of Fine Arts",
 "Audium",
-"Mission Nightlife"
 ]
 
 ONLINE_AUTO_SEARCH_NAPA = [
@@ -338,23 +337,23 @@ def query_api_extern(term, location, genre):
     print("Querying Yelp with term = " + term +" , location = " + location)
     #with open(term+"-businesses.txt", 'w') as out:
     offset = 0
-    response = search(bearer_token, term, location, offset, limit = 1)
+    response = search(bearer_token, term, location, offset, limit = 3)
     businesses = response.get('businesses')
             #print(response)
             #print businesses
             #print offset
-            
+    results = set()
     if businesses:
-            business = businesses[0]
+        for business in businesses:
             business_id = business['id']
             #business_details = get_business(bearer_token, business_id)
             business_dict = json.loads(json.dumps(business))
             del business_dict['distance']
-            return json.dumps(business_dict)
+            results.add(json.dumps(business_dict))
                     #out.write(json.dumps(business))
                     #out.write("\n")
             
-    return None
+    return results
 
 
 def query_api(term, location):
@@ -394,10 +393,10 @@ def query_api(term, location):
     return results
  
             
-def write_results_to_file(category, term, businesses):
-        with open(category+".json", 'a') as out:
+def write_results_to_file(category, term, businesses, write_option = 'a'):
+        with open(category+".json", write_option) as out:
             for item in businesses:
-                out.write(item)
+                out.write(str(item))
                 out.write("\n")
 
 
@@ -427,14 +426,23 @@ def remove_duplicates(genre):
 def setup_extern_itineraries():
     frommers = set()
     for term in FROMMERS_SEARCHES:
-        frommers.add(query_api_extern(term, FROMMERS_LOCATION, 'Frommers'))
+        for item in query_api_extern(term, FROMMERS_LOCATION, 'Frommers'):
+            frommers.add(item) 
     utrip = set()
     for term in ONLINE_AUTO_SEARCH_NAPA:
-        utrip.add(query_api_extern(term, 'Napa, CA', 'Utrip'))
+        for item in query_api_extern(term, 'Napa, CA', 'Utrip'):
+            utrip.add(item) 
     for term in ONLINE_AUTO_SEARCH_SF:
-        utrip.add(query_api_extern(term, 'Napa, CA', 'Utrip'))
-    write_results_to_file("Frommers", 'null', frommers)
-    write_results_to_file("Utrip", 'null', utrip)
+        for item in query_api_extern(term, 'San Francisco, CA', 'Utrip'):
+            utrip.add(item)
+    for item in query_api_extern('The Barlow', '6770 Mckinley St Sebastopol, CA ', 'Utrip'):
+        utrip.add(item)
+    for item in query_api_extern('O.A.R.S', 'Oakland, CA ', 'Utrip'):
+        utrip.add(item)
+    for item in query_api_extern('Winchester Mystery', 'San Jose, CA ', 'Utrip'):
+        utrip.add(item)
+    write_results_to_file("Frommers", 'null', frommers, write_option = 'w')
+    write_results_to_file("Utrip", 'null', utrip, write_option = 'w')
 
 
 
