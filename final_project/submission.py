@@ -1,4 +1,4 @@
-import collections, util, copy
+import collections, util, copy, random
 import math
 from math import *
 import geopy.distance
@@ -83,6 +83,230 @@ def create_nqueens_csp(n = 8):
     # END_YOUR_CODE
     return csp
 
+class ICM():
+
+    def reset_results(self):
+        """
+        This function resets the statistics of the different aspects of the
+        CSP solver. We will be using the values here for grading, so please
+        do not make any modification to these variables.
+        """
+        # Keep track of the best assignment and weight found.
+        self.optimalAssignment = {}
+        self.optimalWeight = 0
+
+        # Keep track of the number of optimal assignments and assignments. These
+        # two values should be identical when the CSP is unweighted or only has binary
+        # weights.
+        self.numOptimalAssignments = 0
+        self.numAssignments = 0
+
+        # Keep track of the number of times backtrack() gets called.
+        self.numOperations = 0
+
+        # Keep track of the number of operations to get to the very first successful
+        # assignment (doesn't have to be optimal).
+        self.firstAssignmentNumOperations = 0
+
+        # List of all solutions found.
+        self.allAssignments = []
+
+        # List of all optimal solutions found
+        self.allOptimalAssignments = []
+        self.previousWeight = 0
+
+    def get_delta_weight(self, assignment, var, val):
+        """
+        Given a CSP, a partial assignment, and a proposed new value for a variable,
+        return the change of weights after assigning the variable with the proposed
+        value.
+
+        @param assignment: A dictionary of current assignment. Unassigned variables
+            do not have entries, while an assigned variable has the assigned value
+            as value in dictionary. e.g. if the domain of the variable A is [5,6],
+            and 6 was assigned to it, then assignment[A] == 6.
+        @param var: name of an unassigned variable.
+        @param val: the proposed value.
+
+        @return w: Change in weights as a result of the proposed assignment. This
+            will be used as a multiplier on the current weight.
+        """
+        assert var not in assignment
+        w = 1.0
+        if self.csp.unaryFactors[var]:
+            w *= self.csp.unaryFactors[var][val]
+            #if w == 0: print "due to unary factors"
+            if w == 0: return w
+        for var2, factor in self.csp.binaryFactors[var].iteritems():
+            if var2 not in assignment: continue  # Not assigned yet
+            w *= factor[val][assignment[var2]]
+            #if w == 0: print "due to binary factor"
+            if w == 0: return w
+        for var2 in self.csp.ternaryFactors[var]:
+            # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
+            for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
+                if var2 not in assignment or var3 not in assignment: continue  # Not assigned yet
+                w *= factor[val][assignment[var2]][assignment[var3]]
+                #if w == 0: print "due to ternary factor"
+                if w == 0: return w
+        return w
+
+    def solve(self, csp, activities, genre, num_assignments = 10):
+        """
+        Solves the given weighted CSP using heuristics as specified in the
+        parameter. Note that unlike a typical unweighted CSP where the search
+        terminates when one solution is found, we want this function to find
+        all possible assignments. The results are stored in the variables
+        described in reset_result().
+
+        @param csp: A weighted CSP.
+        @param mcv: When enabled, Most Constrained Variable heuristics is used.
+        @param ac3: When enabled, AC-3 will be used after each assignment of an
+            variable is made.
+        """
+        # CSP to be solved.
+        self.csp = csp
+        self.activities = activities
+        self.genre = genre
+       
+        # Reset solutions from previous search.
+        self.reset_results()
+
+        # The dictionary of domains of every variable in the CSP.
+        self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
+
+        # Set maximum number of assignments
+        self.num_assignments = num_assignments
+
+        print "starting ICM"
+        # Perform backtracking search.
+       
+        #for i in range (0, self.num_assignments):
+        #print "Starting ICM candidate ", i
+        max_iterations = 10
+        num_iterations = 0
+        self.prev_weight = 1.0
+        #assignment = self.icm_init()
+        #assignment = self.get_first_assignment()
+        assignment = self.get_assignment_from_backtrack()
+        #assignment = self.get_random_assignment()
+        weight = 1
+        while num_iterations < max_iterations: #and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
+            #print "Round", self.icm_iterations
+            # print "current assignment", assignment
+            # print "weight", weight
+            assignment, weight = self.icm(assignment, weight)
+            num_iterations += 1
+        self.optimalAssignment = assignment
+        print "TOTAL WEIGHT OF ASSIGNMENT =", weight
+
+        print "ending ICM"
+
+    def get_random_assignment(self):
+        assignment = {}
+        for var in self.csp.variables:
+            assignment[var] = random.choice(self.domains[var])
+        return assignment
+
+    def get_assignment_from_backtrack(self):
+        assignment = {}
+        weight = 1
+        assignment[0] = -1
+        assignment[1] = 20
+        assignment[2] = 101
+        assignment[3] = 20
+        assignment[4] = 36
+        assignment[5] = 30
+        assignment[6] = 194
+        assignment[7] = 30
+        assignment[8] = 85
+        assignment[9] = 20
+        assignment[10] = -1
+        assignment[('sum', 'budget', 3)] = (60, 100)
+        assignment[('sum', 'budget', 'aggregated')] = 100
+        assignment[('sum', 'budget', 0)] = (0, 10)
+        assignment[('sum', 'budget', 2)] = (50, 60)
+        assignment[('sum', 'budget', 1)] = (10, 50)
+
+        return assignment
+        # The above assignment corresponds to the following itinerary
+        # Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+        # 20
+        # Activity{name: Webb Ranch, unique_id: 101, latitude: 37.405820, longitude: -122.194094, rating: 3, duration: 180, cost: 0, review_count: 63 is_food: 0}
+        # 20
+        # Activity{name: Cook's Seafood Restaurant & Market, unique_id: 36, latitude: 37.451410, longitude: -122.179660, rating: 4, duration: 30, cost: 30, review_count: 429 is_food: 1}
+        # 30
+        # Activity{name: Rancho San Antonio Open Space Preserve, unique_id: 194, latitude: 37.332879, longitude: -122.087098, rating: 4, duration: 180, cost: 0, review_count: 597 is_food: 0}
+        # 30
+        # Activity{name: Back A Yard Caribbean American Grill, unique_id: 85, latitude: 37.472900, longitude: -122.154948, rating: 4, duration: 30, cost: 30, review_count: 1759 is_food: 1}
+        # 20
+        # Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+        # ('sum', 'budget', 3) = (60, 100)
+        # ('sum', 'budget', 'aggregated') = 100
+        # ('sum', 'budget', 0) = (0, 10)
+        # ('sum', 'budget', 2) = (50, 60)
+        # ('sum', 'budget', 1) = (10, 50)
+
+    def get_first_assignment(self):
+        assignment = {}
+        num_slots = 11
+
+        # assign random assignments to activity slots
+        for slot in range(num_slots):
+            if slot % 2 == 0:
+                assignment[slot] = random.choice(self.domains[slot])
+
+        # assign time slots according to activity slots
+        for slot in range(num_slots):
+            if slot % 2 != 0:
+                for val in self.domains[slot]:
+                    delta_weight = self.get_delta_weight(assignment, slot, val)
+                    if delta_weight > 0:
+                        assignment[slot] = val
+                        break
+
+        for var in self.csp.variables:
+            if var not in assignment:
+                assignment[var] = random.choice(self.domains[var])
+
+        return assignment
+
+    def icm(self, assignment, weight):
+
+        for var in self.csp.variables:
+            #get domain values for current var
+            ordered_values = self.domains[var]
+            random.shuffle(ordered_values)
+            # print "looking at var", var
+            # print "possible values", ordered_values
+
+            possible_assignments = [] # list of tuples (assignment, weight)
+
+            #check all possible domain values
+            for val in ordered_values:
+
+                #creates a copy of current assignment and makes it None so delta weights can test if adding this variable changes existing weights
+                assignCopy = assignment.copy()
+                del assignCopy[var]
+                deltaWeight = self.get_delta_weight(assignCopy, var, val)
+
+                #checks if new assignment changes weight of graph
+                if deltaWeight > 0:
+                    assignCopy[var] = val
+                    new_weight = weight * deltaWeight
+                    possible_assignments.append((assignCopy, new_weight))
+
+            # choose best assignment found, if any
+            if len(possible_assignments) != 0:
+                #print "found best local assignment"
+                possible_assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
+                assignment, weight = possible_assignments[0]
+                # print assignment
+                # print "weight", weight
+
+        return (assignment, weight)
+
+
 class BeamSearch():
     def reset_results(self):
         """
@@ -155,7 +379,7 @@ class BeamSearch():
         for var2 in self.csp.ternaryFactors[var]:
             # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
             for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
-                if var2 or var3 not in assignment: continue  # Not assigned yet
+                if var2 not in assignment or var3 not in assignment: continue  # Not assigned yet
                 w *= factor[val][assignment[var2]][assignment[var3]]
                 if w == 0: return w
         return w
@@ -587,7 +811,6 @@ def haversine(lon1, lat1, lon2, lat2):
     """
     # convert decimal degrees to radians 
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-
     # haversine formula 
     dlon = lon2 - lon1 
     dlat = lat2 - lat1 
@@ -646,7 +869,7 @@ class SchedulingCSPConstructor():
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
         time_domain = []
-        for x in range(0, self.max_travel_time+1):
+        for x in range(0, self.max_travel_time+1, 10):
             time_domain.append(x)
         # print time_domain
         activities_domain = list(self.activities.keys())
@@ -675,7 +898,7 @@ class SchedulingCSPConstructor():
     def add_budget_constraints(self, csp):
         print "starting add budget constraints"
         def factor(a, b):
-            val = int(math.ceil(self.act_and_rest[a].cost / 10)) * 10
+            val = int(math.ceil(self.act_and_rest[a].cost / 10)) * 10 + 10
             return b[1] == b[0] + val
 
         variables = []
@@ -757,11 +980,11 @@ class SchedulingCSPConstructor():
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a == -1:
-                        return b == int(haversine_miles(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude) / 10)) * 10 + 10
                     if c == -1:
-                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude) / 10)) * 10 + 10
                     else:
-                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude) / 10)) * 10 + 10
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constraints"
@@ -816,7 +1039,7 @@ class SchedulingCSPConstructor():
         # self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
+        # self.add_time_constraints(csp)
         # self.add_weighted_travel_time_constraints(csp)
         # self.add_penalize_none_constraints(csp)
         return csp

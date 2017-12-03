@@ -8,18 +8,17 @@ profilePath = sys.argv[1]
 profile = util.Profile(profilePath)
 profile.print_info()
 # genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
-genreToPath = {'thrill':'../activities_100.json','food':'../restaurants_100.json'}
-# genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
+genre = 'thrill'
+genreToPath = {genre:'../activities_100.json','food':'../restaurants_100.json'}
+#genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
 activities = util.ActivityCollection(profile, genreToPath).activities
 cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
-alg = submission.BeamSearch()
-k=100
-alg.solve(csp, mcv = True, ac3 = False, k = k)
-
-if alg.allAssignments:
-  print "printing k=%d assignments found" % k
-  util.print_all_scheduling_solutions_beam(alg.allAssignments, profile, activities)
+alg = submission.ICM()
+alg.solve(csp, num_assignments = 10, activities = activities, genre = genre)
+if alg.optimalAssignment:
+  print "printing solution"
+  util.print_scheduling_solution(alg.optimalAssignment, profile, activities)
 else:
   print "no solution found"
