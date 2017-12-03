@@ -183,18 +183,14 @@ class ICM():
        
         #for i in range (0, self.num_assignments):
         #print "Starting ICM candidate ", i
-        max_iterations = 10
+        max_iterations = 100
         num_iterations = 0
         self.prev_weight = 1.0
-        #assignment = self.icm_init()
         #assignment = self.get_first_assignment()
         assignment = self.get_assignment_from_backtrack()
         #assignment = self.get_random_assignment()
         weight = 1
-        while num_iterations < max_iterations: #and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
-            #print "Round", self.icm_iterations
-            # print "current assignment", assignment
-            # print "weight", weight
+        while num_iterations < max_iterations:
             assignment, weight = self.icm(assignment, weight)
             num_iterations += 1
         self.optimalAssignment = assignment
@@ -265,6 +261,19 @@ class ICM():
                         assignment[slot] = val
                         break
 
+        aux_budget_vars = [
+            ('sum', 'budget', 0),
+            ('sum', 'budget', 1),
+            ('sum', 'budget', 2),
+            ('sum', 'budget', 3),
+            ('sum', 'budget', 'aggregated'),]
+        for var in aux_budget_vars:
+            for val in self.domains[var]:
+                delta_weight = self.get_delta_weight(assignment, var, val)
+                if delta_weight > 0:
+                    assignment[var] = val
+                    break
+        
         for var in self.csp.variables:
             if var not in assignment:
                 assignment[var] = random.choice(self.domains[var])
@@ -458,12 +467,12 @@ class BeamSearch():
         for assignment, weight in assignments:
             for val in ordered_values:
                 deltaWeight = self.get_delta_weight(assignment, var, val)
-                if deltaWeight > 0:
+                #if deltaWeight > 0:
                     # Copy assignment with new var, val pair into extended assignments
-                    newAssignment = assignment.copy()
-                    newAssignment[var] = val
-                    newWeight = weight * deltaWeight
-                    extended_assignments.append((newAssignment, newWeight))
+                newAssignment = assignment.copy()
+                newAssignment[var] = val
+                newWeight = weight * deltaWeight
+                extended_assignments.append((newAssignment, newWeight))
 
         return extended_assignments
 
