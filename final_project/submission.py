@@ -147,6 +147,7 @@ class ICRSearch():
                 for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):
                     val = random.choice(ordered_values)
                     if self.check_for_food(val) and contains_food:
+                        print "EXTRA FOOD IN INIT, SKIPPING"
                         continue
                     delta_weight = self.get_delta_weight(newAssignment, var, val)
                     #print delta_weight
@@ -173,6 +174,7 @@ class ICRSearch():
             for val in ordered_values:
                 val_has_food = self.check_for_food(val)
                 if(assignment_contains_food and val_has_food):
+                    "FOOD IN REFRESH, SKIPPING"
                     continue
                 assignCopy = copy.copy(assignment)
                 del assignCopy[var]
