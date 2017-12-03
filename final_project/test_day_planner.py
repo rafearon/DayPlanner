@@ -11,7 +11,7 @@ profile.print_info()
 # genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
 # genreToPath = {'thrill':'../activities_100.json','food':'../restaurants_100.json'}
 
-genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
+genreToPath = {'thrill':'../activities_100.json','food':'../restaurants_100.json'}
 activities = util.ActivityCollection(profile, genreToPath).activities
 cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()

@@ -637,12 +637,15 @@ class SchedulingCSPConstructor():
             if i == 0:
                 csp.add_variable(i, home_domain)
                 continue
+            if i == self.num_slots - 1:
+                csp.add_variable(i, home_domain)
+                continue
             if i % 2 == 0:
                 csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
             else:
                 # travel time
                 # csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
-                csp.add_variable(i, time_domain + [None])
+                csp.add_variable(i, time_domain)
         print "ending add variables"
     
     # budget: value of (i, "activity") summed up less than user budget
@@ -656,7 +659,7 @@ class SchedulingCSPConstructor():
 
         variables = []
         for i in range(0, self.num_slots):
-            if i != 0 and i % 2 == 0:
+            if i % 2 == 0:
                 variables.append(i)
 
         result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor, 10)
