@@ -493,7 +493,9 @@ def print_all_scheduling_solutions(solutions, profile, ac):
 def print_scheduling_solution(solution, profile, ac):
     if solution == None:
         print "No schedule found that satisfied all the constraints."
-    activities = ac[profile.genre]
+    # activities = ac[profile.genre].update(ac["food"])
+    activities = dict(ac[profile.genre].items() + ac["food"].items())
+    # print activities
     time_slots = 11
     # print all activity and time slots first
     for slot in range(time_slots):
