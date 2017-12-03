@@ -255,21 +255,18 @@ class BeamSearch():
     def get_ordered_vars(self, csp):
         num_slots = 11
         ordered_vars = []
-        # # ATTEMPT 1
         # food variables
-        # ordered_vars.extend([('sum', 'food', 'aggregated'),
-        #     ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
-        #     ('sum', 'food', 3), ('sum', 'food', 4)])
-        # # activity vars
-        # ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
-        # # budget vars
-        # ordered_vars.extend([
-        #     ('sum', 'budget', 0),
-        #     ('sum', 'budget', 1),
-        #     ('sum', 'budget', 2),
-        #     ('sum', 'budget', 3),
-        #     ('sum', 'budget', 4),
-        #     ('sum', 'budget', 'aggregated')])
+        ordered_vars.extend([('sum', 'food', 'aggregated'),
+            ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
+            ('sum', 'food', 3), ('sum', 'food', 4)])
+        # budget vars
+        ordered_vars.extend([
+            ('sum', 'budget', 0),
+            ('sum', 'budget', 1),
+            ('sum', 'budget', 2),
+            ('sum', 'budget', 3),
+            ('sum', 'budget', 4),
+            ('sum', 'budget', 'aggregated')])
 
         # ordered_vars.extend([
         #     ('sum', 'act_time', 'aggregated'),
@@ -284,8 +281,10 @@ class BeamSearch():
         #     ('sum', 'travel_time', 2),
         #     ('sum', 'travel_time', 1),
         #     ('sum', 'travel_time', 0)])
-        # # time vars
-        # ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+        # time vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 
         # # ATTEMPT 2
         # # home variable
@@ -312,31 +311,43 @@ class BeamSearch():
         #     slot -= 2
         #     i -= 1
 
-        # ATTEMPT 3
-        # home variable
-        ordered_vars.append(0)
+        # # ATTEMPT 3
+        # # home variable
+        # ordered_vars.append(0)
+        # ordered_vars.extend([
+        #     ('sum', 'food', 'aggregated'),
+        #     ('sum', 'food', 0),
+        #     ('sum', 'food', 1),
+        #     ('sum', 'food', 2),
+        #     ('sum', 'food', 3),
+        #     ('sum', 'food', 4),
+        #     ])
 
-        i = 0
-        slot = 1
-        while slot < num_slots:
-            ordered_vars.extend([
-                slot + 1,
-                slot,
-                ('sum', 'budget', i),
-                ('sum', 'food', i),
-                ('sum', 'act_time', i),
-                ('sum', 'travel_time', i),
-                ])
-            slot += 2
-            i += 1
+        # ordered_vars.extend([
+        #     ('sum', 'budget', 0),
+        #     ('sum', 'budget', 1),
+        #     ('sum', 'budget', 2),
+        #     ('sum', 'budget', 3),
+        #     ('sum', 'budget', 4),
+        #     ('sum', 'budget', 'aggregated')])
 
-        # sum aggregates
-        ordered_vars.extend([
-            ('sum', 'food', 'aggregated'),
-            ('sum', 'budget', 'aggregated'),
-            ('sum', 'act_time', 'aggregated'),
-            ('sum', 'travel_time', 'aggregated'),
-            ])
+        # i = 0
+        # slot = 1
+        # while slot < num_slots:
+        #     ordered_vars.extend([
+        #         slot + 1,
+        #         slot,
+        #         ('sum', 'act_time', i),
+        #         ('sum', 'travel_time', i),
+        #         ])
+        #     slot += 2
+        #     i += 1
+
+        # # sum aggregates
+        # ordered_vars.extend([
+        #     ('sum', 'act_time', 'aggregated'),
+        #     ('sum', 'travel_time', 'aggregated'),
+        #     ])
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
@@ -850,7 +861,7 @@ class SchedulingCSPConstructor():
         self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
-        self.add_weighted_travel_time_constraints(csp)
+        # self.add_time_constraints(csp)
+        # self.add_weighted_travel_time_constraints(csp)
         self.add_penalize_none_constraints(csp)
         return csp
