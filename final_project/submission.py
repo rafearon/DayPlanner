@@ -286,69 +286,6 @@ class BeamSearch():
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 
-        # # ATTEMPT 2
-        # # home variable
-        # ordered_vars.append(0)
-        # # sum aggregates
-        # ordered_vars.extend([
-        #     ('sum', 'food', 'aggregated'),
-        #     ('sum', 'budget', 'aggregated'),
-        #     ('sum', 'act_time', 'aggregated'),
-        #     ('sum', 'travel_time', 'aggregated'),
-        #     ])
-
-        # i = int(num_slots/2) - 1
-        # slot = num_slots - 1
-        # while i >= 0:
-        #     ordered_vars.extend([
-        #         ('sum', 'budget', i),
-        #         ('sum', 'food', i),
-        #         ('sum', 'act_time', i),
-        #         ('sum', 'travel_time', i),
-        #         slot,
-        #         slot - 1,
-        #         ])
-        #     slot -= 2
-        #     i -= 1
-
-        # # ATTEMPT 3
-        # # home variable
-        # ordered_vars.append(0)
-        # ordered_vars.extend([
-        #     ('sum', 'food', 'aggregated'),
-        #     ('sum', 'food', 0),
-        #     ('sum', 'food', 1),
-        #     ('sum', 'food', 2),
-        #     ('sum', 'food', 3),
-        #     ('sum', 'food', 4),
-        #     ])
-
-        # ordered_vars.extend([
-        #     ('sum', 'budget', 0),
-        #     ('sum', 'budget', 1),
-        #     ('sum', 'budget', 2),
-        #     ('sum', 'budget', 3),
-        #     ('sum', 'budget', 4),
-        #     ('sum', 'budget', 'aggregated')])
-
-        # i = 0
-        # slot = 1
-        # while slot < num_slots:
-        #     ordered_vars.extend([
-        #         slot + 1,
-        #         slot,
-        #         ('sum', 'act_time', i),
-        #         ('sum', 'travel_time', i),
-        #         ])
-        #     slot += 2
-        #     i += 1
-
-        # # sum aggregates
-        # ordered_vars.extend([
-        #     ('sum', 'act_time', 'aggregated'),
-        #     ('sum', 'travel_time', 'aggregated'),
-        #     ])
-
         print "assigning variables in beam search in this order:"
         print ordered_vars
 
@@ -800,11 +737,11 @@ class SchedulingCSPConstructor():
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a is None or b is None or c is None:
-                        return 0.5
+                        return 0.2
                     if a == -1:
-                        return b == find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                        return b == int(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
                     else:
-                        return b == find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)
+                        return b == int(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
@@ -843,7 +780,7 @@ class SchedulingCSPConstructor():
             def factor(a):
                 if a is None:
                     return 0.2
-                return 100
+                return 1
             csp.add_unary_factor(i, factor)
         print "ending add_penalize_none_constraints"
 
