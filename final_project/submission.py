@@ -152,6 +152,12 @@ class BeamSearch():
             if var2 not in assignment: continue  # Not assigned yet
             w *= factor[val][assignment[var2]]
             if w == 0: return w
+        for var2 in self.csp.ternaryFactors[var]:
+            # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
+            for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
+                if var2 or var3 not in assignment: continue  # Not assigned yet
+                w *= factor[val][assignment[var2]][assignment[var3]]
+                if w == 0: return w
         return w
 
     def solve(self, csp, mcv = False, ac3 = False, k = 10):
@@ -204,13 +210,15 @@ class BeamSearch():
         # Number of variables currently assigned
         num_assigned = 0
 
-        for var in self.get_ordered_vars():
+        for var in self.get_ordered_vars(self.csp):
             extended = self.extend_assignments(assignments, var)
             assignments = self.prune_assignments(extended)
             num_assigned += 1
-        
-        for a, w in assignments:
-                print w
+            # for a, w in assignments:
+            #     print a, w
+            if len(assignments) == 0:
+                print "no assignments after assigning", var
+                break
 
         self.allAssignments = [a for a, w in assignments]
 
@@ -244,7 +252,7 @@ class BeamSearch():
         # Return top k assignments
         return assignments[:self.k]
 
-    def get_ordered_vars(self):
+    def get_ordered_vars(self, csp):
         num_slots = 11
         ordered_vars = []
         # food variables
@@ -259,27 +267,29 @@ class BeamSearch():
             ('sum', 'budget', 3),
             ('sum', 'budget', 4),
             ('sum', 'budget', 'aggregated')])
+
+        # ordered_vars.extend([
+        #     ('sum', 'act_time', 'aggregated'),
+        #     ('sum', 'travel_time', 'aggregated'),
+        #     ('sum', 'act_time', 4),
+        #     ('sum', 'act_time', 3),
+        #     ('sum', 'act_time', 2),
+        #     ('sum', 'act_time', 1),
+        #     ('sum', 'act_time', 0),
+        #     ('sum', 'travel_time', 4),
+        #     ('sum', 'travel_time', 3),
+        #     ('sum', 'travel_time', 2),
+        #     ('sum', 'travel_time', 1),
+        #     ('sum', 'travel_time', 0)])
         # activity vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
-        # ordered_vars.extend([
-        #     ('sum', 'act_time', 0),
-        #     ('sum', 'act_time', 1),
-        #     ('sum', 'act_time', 2),
-        #     ('sum', 'act_time', 3),
-        #     ('sum', 'act_time', 4),
-        #     ('sum', 'act_time', 'aggregated'),
-        #     ('sum', 'travel_time', 0),
-        #     ('sum', 'travel_time', 1),
-        #     ('sum', 'travel_time', 2),
-        #     ('sum', 'travel_time', 3),
-        #     ('sum', 'travel_time', 4),
-        #     ('sum', 'travel_time', 'aggregated')
-        #     ])
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
+
+        assert(len(self.csp.variables) == len(ordered_vars))
         return ordered_vars
 
 # A backtracking algorithm that solves weighted CSP.
