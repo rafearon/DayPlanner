@@ -120,16 +120,17 @@ class ICRSearch():
        
         for i in range (0, self.num_assignments):
             print "Starting ICR candidate ", i
-            self.cutoff = 60
+            self.cutoff = 8
             self.curr_weight = 1.0
             self.icr_iterations = 0
-            self.prev_weight = -1.0
-            self.icr_iterations = 0
+            self.prev_weight = 1.0
             startAssignment = self.icr_init()
             while self.icr_iterations < self.cutoff: #and format(self.curr_weight, '.4f') != format(self.prev_weight, '.4f'):
                 #print "Round", self.icr_iterations
                 self.icr(startAssignment)
                 self.icr_iterations += 1
+                if self.curr_weight == float('inf'):
+                    print "ON ITER ", self.icr_iterations
             self.allAssignments.append(startAssignment)
             print "TOTAL WEIGHT OF ASSIGNMENT ", i , " = ", self.curr_weight
 
@@ -139,54 +140,80 @@ class ICRSearch():
 
 
     def icr_init(self):
+
         newAssignment = {}
         start_weight = 1
+        #iterates through every variable
         for var_idx, var in enumerate(self.csp.variables):
+                #get vaues for current variable
                 ordered_values = self.domains[var]
+                #booleans to prevent over iteration if no solution is found + prevent too much food. CURRENTLY THERE ARE STILL FOOD PROGRESSIVES
                 success = False
-                contains_food = False
+                assigment_contains_food = False
+
+                #Tries to initialize the first assignments with weight > 0 
                 for tries in range(0, util.LIMIT_NUM_ACTIVITIES_PER_FILE):
+                    #pick random domain value for current variable
                     val = random.choice(ordered_values)
-                    if self.check_for_food(val) and contains_food:
+
+                    #if the assignments has food and the current domain value has food, retry the loop and pick new random assignment
+                    if self.check_for_food(val) and assignment_contains_food:
                         print "EXTRA FOOD IN INIT, SKIPPING"
                         continue
+
+                    #get delta weight for assigning current var with current value    
                     delta_weight = self.get_delta_weight(newAssignment, var, val)
-                    #print delta_weight
-                    if delta_weight > 1:
+                    
+                    #Check if delta weight will keep CSP the same or increase it. Skip if weight decreases
+                    if delta_weight == 0 or delta_weight > 1:
+
+                        #add current variable combo to assignment
                         newAssignment[var] = val
+
+                        #prevent delta_weight of 0 from cancelling existing weights. WARNING: this might be introducing the inf bug
                         if delta_weight == 0:
                             delta_weight = 1
                         start_weight *= delta_weight
                         success = True
+                        #checks if we just added food to the assignment and marks it as true.
                         if self.check_for_food(val):
-                            contains_food = True
+                            assignment_contains_food = True
                         break    
                 if not success:
                     newAssignment[var] = None
-        #print newAssignment
         self.curr_weight = start_weight
         return newAssignment
 
 
     def icr(self, assignment):
+
+
         assignment_contains_food = False
         for var in assignment:
+            #get domain values for current var
             ordered_values = self.domains[var]
+
+            #check all possible domain values
             for val in ordered_values:
+
+                #checks to make sure additional food options not added
                 val_has_food = self.check_for_food(val)
                 if(assignment_contains_food and val_has_food):
                     "FOOD IN REFRESH, SKIPPING"
                     continue
+
+                #creates a copy of current assignment and makes it None so delta weights can test if adding this variable changes existing weights
                 assignCopy = copy.copy(assignment)
-                del assignCopy[var]
+                assignCopy[var] = None
                 deltaWeight = self.get_delta_weight(assignCopy, var, val)
-                #print deltaWeight
-                if deltaWeight > 0:
+
+                #checks if new assignment increases weight of graph
+                if deltaWeight > 1:
                     assignment[var] = val
                     self.prev_weight = self.curr_weight
                     self.curr_weight *= deltaWeight
                     if val_has_food:
-                        assigment_contains_food = val_has_food
+                        assignment_contains_food = val_has_food
 
     def check_for_food(self, val_num):
         try:
@@ -398,6 +425,7 @@ class BeamSearch():
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 
+        '''
         ordered_vars.extend([
             ('sum', 'act_time', 0),
             ('sum', 'act_time', 1),
@@ -412,7 +440,7 @@ class BeamSearch():
             ('sum', 'travel_time', 4),
             ('sum', 'travel_time', 'aggregated')
             ])
-
+        '''
         print "assigning variables in beam search in this order:"
         print ordered_vars
         return ordered_vars
@@ -930,7 +958,7 @@ class SchedulingCSPConstructor():
         self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-        self.add_time_constraints(csp)
+        #self.add_time_constraints(csp)
         self.add_weighted_travel_time_constraints(csp)
         self.add_penalize_none_constraints(csp)
         return csp
