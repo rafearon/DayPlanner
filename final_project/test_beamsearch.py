@@ -15,10 +15,11 @@ cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
 alg = submission.BeamSearch()
-alg.solve(csp, mcv = False, ac3 = True, k = 100)
+k=100
+alg.solve(csp, mcv = False, ac3 = True, k = k)
 
 if alg.allAssignments:
-  print "printing k=%d assignments found" % 10
+  print "printing k=%d assignments found" % k
   util.print_all_scheduling_solutions(alg.allAssignments, profile, activities)
 else:
   print "no solution found"
