@@ -155,7 +155,7 @@ class BeamSearch():
         for var2 in self.csp.ternaryFactors[var]:
             # print self.csp.ternaryFactors[var], "done", var, "done", var2, "HIIIII"
             for var3, factor in self.csp.ternaryFactors[var][var2].iteritems():
-                if var2 or var3 not in assignment: continue  # Not assigned yet
+                if var2 not in assignment or var3 not in assignment: continue  # Not assigned yet
                 w *= factor[val][assignment[var2]][assignment[var3]]
                 if w == 0: return w
         return w
@@ -587,7 +587,6 @@ def haversine(lon1, lat1, lon2, lat2):
     """
     # convert decimal degrees to radians 
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-
     # haversine formula 
     dlon = lon2 - lon1 
     dlat = lat2 - lat1 
@@ -646,7 +645,7 @@ class SchedulingCSPConstructor():
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
         time_domain = []
-        for x in range(0, self.max_travel_time+1):
+        for x in range(0, self.max_travel_time+1, 10):
             time_domain.append(x)
         # print time_domain
         activities_domain = list(self.activities.keys())
@@ -675,7 +674,7 @@ class SchedulingCSPConstructor():
     def add_budget_constraints(self, csp):
         print "starting add budget constraints"
         def factor(a, b):
-            val = int(math.ceil(self.act_and_rest[a].cost / 10)) * 10
+            val = int(math.ceil(self.act_and_rest[a].cost / 10)) * 10 + 10
             return b[1] == b[0] + val
 
         variables = []
@@ -757,11 +756,11 @@ class SchedulingCSPConstructor():
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
                     if a == -1:
-                        return b == int(haversine_miles(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.home[a].latitude, self.home[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude) / 10)) * 10 + 10
                     if c == -1:
-                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.home[c].latitude, self.home[c].longitude) / 10)) * 10 + 10
                     else:
-                        return b == int(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude))
+                        return b == int(math.ceil(haversine_miles(self.act_and_rest[a].latitude, self.act_and_rest[a].longitude, self.act_and_rest[c].latitude, self.act_and_rest[c].longitude) / 10)) * 10 + 10
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
