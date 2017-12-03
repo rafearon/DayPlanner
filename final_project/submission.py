@@ -743,8 +743,8 @@ class SchedulingCSPConstructor():
             if i % 2 == 0:
                 def factor(a):
                     if a is None:
-                        return 1 # in order to promote having filled slots (this is the only place we explicitly promote filled slots)
-                    return self.activities[a].rating
+                        return 0.5
+                    return self.activities[a].rating/5
                 csp.add_unary_factor(i, factor)
         print "ending add travel time constaints"
 
