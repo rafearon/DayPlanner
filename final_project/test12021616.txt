@@ -3,7 +3,7 @@ Time: 09:00 - 20:00 (total of 660 minutes)
 Genre: thrill
 Food: yes
 Starting coordinates: (37.423580, -122.170733)
-max travel time is  60
+max travel time is  30
 starting add variables
 ending add variables
 starting add budget constraints
@@ -16,54 +16,6 @@ starting add food constaints
 ending add food constaints
 starting add review count constraints
 ending add review count constraints
-starting ICR
-Starting ICR candidate  0
-TOTAL WEIGHT OF ASSIGNMENT  0  =  7631.71862785
-Starting ICR candidate  1
-TOTAL WEIGHT OF ASSIGNMENT  1  =  13874.2417061
-Starting ICR candidate  2
-TOTAL WEIGHT OF ASSIGNMENT  2  =  inf
-Starting ICR candidate  3
-TOTAL WEIGHT OF ASSIGNMENT  3  =  52230.8634377
-Starting ICR candidate  4
-TOTAL WEIGHT OF ASSIGNMENT  4  =  34179.5295172
-Starting ICR candidate  5
-TOTAL WEIGHT OF ASSIGNMENT  5  =  27135.8522333
-Starting ICR candidate  6
-TOTAL WEIGHT OF ASSIGNMENT  6  =  18815.565945
-Starting ICR candidate  7
-TOTAL WEIGHT OF ASSIGNMENT  7  =  16897.7431087
-Starting ICR candidate  8
-TOTAL WEIGHT OF ASSIGNMENT  8  =  12199.327741
-Starting ICR candidate  9
-TOTAL WEIGHT OF ASSIGNMENT  9  =  9074.12374627
-ending ICR
-No solution was found.
-printing k=10 assignments found
-Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
-None
-Activity{name: Pompette, unique_id: 115, latitude: 37.870526, longitude: -122.300983, rating: 3, duration: 30, cost: 30, review_count: 58 is_food: 1}
-None
-Activity{name: Mary Lonergan Art, unique_id: 1616, latitude: 37.788720, longitude: -122.183420, rating: 4, duration: 100, cost: 0, review_count: 1 is_food: 0}
-None
-Activity{name: Calavera, unique_id: 23, latitude: 37.812846, longitude: -122.266074, rating: 3, duration: 30, cost: 30, review_count: 407 is_food: 1}
-None
-Activity{name: Tselogs, unique_id: 773, latitude: 37.786560, longitude: -122.412950, rating: 4, duration: 20, cost: 10, review_count: 295 is_food: 1}
-None
-('sum', 'budget', 2) = (7, 21)
-('sum', 'food', 'aggregated') = 1
-('sum', 'food', 1) = (0, 1)
-('sum', 'food', 0) = (1, 0)
-('sum', 'budget', 3) = (17, 0)
-('sum', 'budget', 'aggregated') = 0
-('sum', 'food', 3) = (0, 1)
-('sum', 'budget', 0) = (57, 5)
-('sum', 'food', 2) = (1, 0)
-('sum', 'budget', 1) = (54, 16)
-23.8428444188
-Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
-None
-Activity{name: The GREATROOM, unique_id: 1949, latitude: 37.489148, longitude: -121.946249, rating: 3, duration: 30, cost: 30, review_count: 12 is_food: 0}
-None
-Activity{name: Seascape Park, unique_id: 1003, latitude: 36.950558, longitude: -121.877090, rating: 4, duration: 180, cost: 0, review_count: 14 is_food: 0}
-None
+starting add travel time constaints
+1
+3

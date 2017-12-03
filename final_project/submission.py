@@ -120,7 +120,7 @@ class ICRSearch():
        
         for i in range (0, self.num_assignments):
             print "Starting ICR candidate ", i
-            self.cutoff = 30
+            self.cutoff = 60
             self.curr_weight = 1.0
             self.icr_iterations = 0
             self.prev_weight = -1.0
