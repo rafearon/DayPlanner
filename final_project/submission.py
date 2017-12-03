@@ -2,7 +2,7 @@ import collections, util, copy, math
 
 import geopy.distance
 
-time_per_mile = 1 # minutes
+time_per_mile = 2 # minutes
 
 import collections, util, copy
 
@@ -258,37 +258,38 @@ class BeamSearch():
         # food variables
         ordered_vars.extend([('sum', 'food', 'aggregated'),
             ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
-            ('sum', 'food', 3), ('sum', 'food', 4)])
+            ('sum', 'food', 3)])
+        
+        # activity vars
+        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+
         # budget vars
         ordered_vars.extend([
             ('sum', 'budget', 0),
             ('sum', 'budget', 1),
             ('sum', 'budget', 2),
             ('sum', 'budget', 3),
-            ('sum', 'budget', 4),
             ('sum', 'budget', 'aggregated')])
 
-        ordered_vars.extend([
-            ('sum', 'act_time', 'aggregated'),
-            ('sum', 'travel_time', 'aggregated'),
-            ('sum', 'act_time', 4),
-            ('sum', 'act_time', 3),
-            ('sum', 'act_time', 2),
-            ('sum', 'act_time', 1),
-            ('sum', 'act_time', 0),
-            ('sum', 'travel_time', 4),
-            ('sum', 'travel_time', 3),
-            ('sum', 'travel_time', 2),
-            ('sum', 'travel_time', 1),
-            ('sum', 'travel_time', 0)])
-        # activity vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+        # ordered_vars.extend([
+        #     ('sum', 'act_time', 'aggregated'),
+        #     ('sum', 'travel_time', 'aggregated'),
+        #     ('sum', 'act_time', 3),
+        #     ('sum', 'act_time', 2),
+        #     ('sum', 'act_time', 1),
+        #     ('sum', 'act_time', 0),
+        #     ('sum', 'travel_time', 4),
+        #     ('sum', 'travel_time', 3),
+        #     ('sum', 'travel_time', 2),
+        #     ('sum', 'travel_time', 1),
+        #     ('sum', 'travel_time', 0)])
         # time vars
         ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
 
         print "assigning variables in beam search in this order:"
         print ordered_vars
 
+        print self.csp.variables
         assert(len(self.csp.variables) == len(ordered_vars))
         return ordered_vars
 
@@ -628,7 +629,6 @@ class SchedulingCSPConstructor():
         time_domain = []
         for x in range(0, self.max_travel_time+1, 10):
             time_domain.append(x)
-        # print time_domain
         activities_domain = list(self.activities.keys())
         home_domain = list(self.home.keys())
         
@@ -637,11 +637,14 @@ class SchedulingCSPConstructor():
             if i == 0:
                 csp.add_variable(i, home_domain)
                 continue
+            if i == self.num_slots - 1:
+                csp.add_variable(i, home_domain)
+                continue
             if i % 2 == 0:
-                csp.add_variable(i, activities_domain + [None]) # if an activity/restaraunt slot is not assigned, it will be None
+                # activity
+                csp.add_variable(i, activities_domain) # if an activity/restaraunt slot is not assigned
             else:
                 # travel time
-                # csp.add_variable(i, time_domain + [None]) # if a time slot is not assigned, it will be duration 0
                 csp.add_variable(i, time_domain)
         print "ending add variables"
     
@@ -649,14 +652,12 @@ class SchedulingCSPConstructor():
     def add_budget_constraints(self, csp):
         print "starting add budget constraints"
         def factor(a, b):
-            val = 0
-            if a != None:
-                val = int(math.ceil(self.activities[a].cost / 10)) * 10 + 10
+            val = int(math.ceil(self.activities[a].cost / 10)) * 10
             return b[1] == b[0] + val
 
         variables = []
         for i in range(0, self.num_slots):
-            if i != 0 and i % 2 == 0:
+            if i % 2 == 0 and i != 0 and i != self.num_slots - 1:
                 variables.append(i)
 
         result = get_sum_variable(csp, "budget", variables, self.profile.budget, factor, 10)
@@ -664,69 +665,61 @@ class SchedulingCSPConstructor():
         print "ending add budget constraints"
 
     # time: value of (i, "activity").duration and (i, "travel").duration summed up less than user time
-    def add_time_constraints(self, csp):
-        print "starting time constaints"
-        def factor(a, b):
-            val = 0
-            if a != None:
-                val = int(math.ceil(self.activities[a].duration / 10)) * 10 + 10
-            return b[1] == b[0] + val
+    # def add_time_constraints(self, csp):
+    #     print "starting time constaints"
+    #     def activity_factor(a, b):
+    #         val = int(math.ceil(self.activities[a].duration / 10)) * 10
 
-        def time_factor(a, b):
-            return b[1] == b[0] + a
+    #     def time_factor(a, b):
+    #         return b[1] == b[0] + a
 
-        activity_variables = []
-        time_variables = []
-        for i in range(0, self.num_slots):
-            if i % 2 == 0 and i != 0:
-                activity_variables.append(i)
-            if i % 2 != 0 and i != 0:
-                time_variables.append(i)
-        result1 = get_sum_variable(csp, "act_time", activity_variables, self.profile.total_time, factor, 10)
-        result2 = get_sum_variable(csp, "travel_time", time_variables, self.profile.total_time, time_factor, 10)
-        csp.add_binary_factor(result1, result2, lambda val1, val2: val1 + val2 <= self.profile.total_time)
-        print "ending time contraints"
+    #     activity_variables = []
+    #     time_variables = []
+    #     for i in range(0, self.num_slots):
+    #         if i % 2 == 0 and i != 0 and i != self.num_slots-1:
+    #             activity_variables.append(i)
+    #         if i % 2 != 0 and i != 0 and i != self.num_slots-1:
+    #             time_variables.append(i)
+    #     result1 = get_sum_variable(csp, "act_time", activity_variables, self.profile.total_time, activity_factor, 10)
+    #     result2 = get_sum_variable(csp, "travel_time", time_variables, self.profile.total_time, time_factor, 10)
+    #     csp.add_binary_factor(result1, result2, lambda val1, val2: val1 + val2 <= self.profile.total_time)
+    #     print "ending time contraints"
 
     # constraint to make activities different in a schedule
     def add_different_activity_constraints(self, csp):
         print "starting add_different_activity_constraints"
         def factor(a, b):
-            if a == None or b == None: return 1
             return a != b
 
-        variables = [(i, j) for i in range(0, self.num_slots) for j in range(0, self.num_slots) if i != j and i % 2 == 0 and j % 2 == 0]
+        # not adding the last variable since it will be home
+        variables = [(i, j) for i in range(0, self.num_slots-1) for j in range(0, self.num_slots-1) if i != j and i % 2 == 0 and j % 2 == 0]
         for i, j in variables:
             csp.add_binary_factor(i, j, factor)
 
         print "ending add_different_activity_constraints"
 
     # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vice versa
-    def add_weighted_travel_time_constraints(self, csp):
-        print "starting add weighted travel time constraints"
-        for i in range(0, self.num_slots):
-            if i % 2 != 0:
-                def factor(a):
-                    if a == None:
-                        return 0.5 # neutral value so we don't promote/demote empty slots
-                    else:
-                        if a == 0: return .9
-                        return 1/a
-                csp.add_unary_factor(i, factor)
-        print "ending add weighted travel time constraints"
+    # def add_weighted_travel_time_constraints(self, csp):
+    #     print "starting add weighted travel time constraints"
+    #     for i in range(0, self.num_slots):
+    #         if i % 2 != 0:
+    #             def factor(a):
+    #                 if a == 0: return .9
+    #                 return 1/a
+    #             csp.add_unary_factor(i, factor)
+    #     print "ending add weighted travel time constraints"
 
     # food: sum number of activities that have food, and if they want food it has to equal one or else 0
     def add_food_constraints(self, csp):
         print "starting add food constaints"
         def factor(a, b):
-            val = 0
-            if a != None:
-                val = self.activities[a].is_food
+            val = self.activities[a].is_food
             return b[1] == b[0] + val
 
         num_restaraunts = self.profile.want_food
         variables = []
         for i in range(0, self.num_slots):
-            if i != 0 and i % 2 == 0:
+            if i != 0 and i != self.num_slots-1 and i % 2 == 0:
                 variables.append(i)
         
         result = get_sum_variable(csp, "food", variables, num_restaraunts, factor, 1)
@@ -739,10 +732,10 @@ class SchedulingCSPConstructor():
         for i in range(1, self.num_slots):
             if i % 2 != 0 and i != self.num_slots:
                 def factor_duration(a, b, c):
-                    if a is None or b is None or c is None:
-                        return 0.2
                     if a == -1:
                         return b == math.ceil(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)/10) * 10 + 10
+                    if c == -1:
+                        return b == math.ceil(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.home[c].latitude, self.home[c].longitude)/10) * 10 + 10
                     else:
                         return b == math.ceil(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)/10) * 10 + 10
                 print i
@@ -751,19 +744,17 @@ class SchedulingCSPConstructor():
 
     # rating: for the value of each (i, "activity"), we give a higher weight for a better rating, UNARY FACTOR
     def add_rating_constraints(self, csp):
-        print "starting add rating constraints"
-        for i in range(1, self.num_slots):
+        print "starting add rating constaints"
+        for i in range(1, self.num_slots-1):
             if i % 2 == 0:
                 def factor(a):
-                    if a is None:
-                        return 1 # in order to promote having filled slots (this is the only place we explicitly promote filled slots)
-                    return self.activities[a].rating
+                    return self.activities[a].rating/5
                 csp.add_unary_factor(i, factor)
         print "ending add travel time constraints"
 
     def add_review_count_constraints(self, csp):
         print "starting add review count constraints"
-        for i in range(1, self.num_slots):
+        for i in range(1, self.num_slots-1):
             if i % 2 == 0:
                 def factor(a):
                     if a is None:
@@ -777,15 +768,15 @@ class SchedulingCSPConstructor():
                 csp.add_unary_factor(i, factor)
         print "ending add review count constraints"
 
-    def add_penalize_none_constraints(self, csp):
-        print "starting add_penalize_none_constraints"
-        for i in range(1, self.num_slots):
-            def factor(a):
-                if a is None:
-                    return 0.2
-                return 1
-            csp.add_unary_factor(i, factor)
-        print "ending add_penalize_none_constraints"
+    # def add_penalize_none_constraints(self, csp):
+    #     print "starting add_penalize_none_constraints"
+    #     for i in range(1, self.num_slots):
+    #         def factor(a):
+    #             if a is None:
+    #                 return 0.2
+    #             return 1
+    #         csp.add_unary_factor(i, factor)
+    #     print "ending add_penalize_none_constraints"
 
     def get_basic_csp(self):
         """
@@ -803,5 +794,5 @@ class SchedulingCSPConstructor():
         self.add_slot_travel_time_constraints(csp)
         self.add_time_constraints(csp)
         # self.add_weighted_travel_time_constraints(csp)
-        self.add_penalize_none_constraints(csp)
+        # self.add_penalize_none_constraints(csp)
         return csp
