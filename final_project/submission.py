@@ -467,12 +467,12 @@ class BeamSearch():
         for assignment, weight in assignments:
             for val in ordered_values:
                 deltaWeight = self.get_delta_weight(assignment, var, val)
-                #if deltaWeight > 0:
+                if deltaWeight > 0:
                     # Copy assignment with new var, val pair into extended assignments
-                newAssignment = assignment.copy()
-                newAssignment[var] = val
-                newWeight = weight * deltaWeight
-                extended_assignments.append((newAssignment, newWeight))
+                    newAssignment = assignment.copy()
+                    newAssignment[var] = val
+                    newWeight = weight * deltaWeight
+                    extended_assignments.append((newAssignment, newWeight))
 
         return extended_assignments
 
@@ -492,10 +492,12 @@ class BeamSearch():
         # ordered_vars.extend([('sum', 'food', 'aggregated'),
         #     ('sum', 'food', 0), ('sum', 'food', 1), ('sum', 'food', 2),
         #     ('sum', 'food', 3), ('sum', 'food', 4)])
-        # activity vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
-        # time vars
-        ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
+        # all slot variables
+        ordered_vars.extend(i for i in range(0, num_slots))
+        # # activity vars
+        # ordered_vars.extend(i for i in range(0, num_slots) if i % 2 == 0)
+        # # time vars
+        # ordered_vars.extend(i for i in range(0, num_slots) if i % 2 != 0)
         # budget vars
         ordered_vars.extend([
             ('sum', 'budget', 0),
