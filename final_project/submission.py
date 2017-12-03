@@ -626,7 +626,7 @@ class SchedulingCSPConstructor():
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
         time_domain = []
-        for x in range(0, self.max_travel_time+1):
+        for x in range(0, self.max_travel_time+1, 10):
             time_domain.append(x)
         # print time_domain
         activities_domain = list(self.activities.keys())
@@ -651,7 +651,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = int(math.ceil(self.activities[a].cost / 10)) * 10
+                val = int(math.ceil(self.activities[a].cost / 10)) * 10 + 10
             return b[1] == b[0] + val
 
         variables = []
@@ -669,7 +669,7 @@ class SchedulingCSPConstructor():
         def factor(a, b):
             val = 0
             if a != None:
-                val = int(math.ceil(self.activities[a].duration / 10)) * 10
+                val = int(math.ceil(self.activities[a].duration / 10)) * 10 + 10
             return b[1] == b[0] + val
 
         activity_variables = []
@@ -699,7 +699,7 @@ class SchedulingCSPConstructor():
 
     # travel time: unary factor where for each (i, "travel") if less time, then greater weight and vice versa
     def add_weighted_travel_time_constraints(self, csp):
-        print "starting add weighted travel time constaints"
+        print "starting add weighted travel time constraints"
         for i in range(0, self.num_slots):
             if i % 2 != 0:
                 def factor(a):
@@ -709,7 +709,7 @@ class SchedulingCSPConstructor():
                         if a == 0: return .9
                         return 1/a
                 csp.add_unary_factor(i, factor)
-        print "ending add weighted travel time constaints"
+        print "ending add weighted travel time constraints"
 
     # food: sum number of activities that have food, and if they want food it has to equal one or else 0
     def add_food_constraints(self, csp):
@@ -739,9 +739,9 @@ class SchedulingCSPConstructor():
                     if a is None or b is None or c is None:
                         return 0.2
                     if a == -1:
-                        return b == int(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
+                        return b == math.ceil(find_travel_time(self.home[a].latitude, self.home[a].longitude, self.activities[c].latitude, self.activities[c].longitude)/10) * 10 + 10
                     else:
-                        return b == int(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude))
+                        return b == math.ceil(find_travel_time(self.activities[a].latitude, self.activities[a].longitude, self.activities[c].latitude, self.activities[c].longitude)/10) * 10 + 10
                 print i
                 csp.add_ternary_factor(i-1, i, i+1, factor_duration)
         print "ending add travel time constaints"
