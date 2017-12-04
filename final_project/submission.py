@@ -4,7 +4,6 @@ import math
 from math import *
 import geopy.distance
 import collections, util, copy
-
 time_per_mile = 2 # minutes
 
 
@@ -440,24 +439,7 @@ class BeamSearch():
             ('sum', 'budget', 3),
             ('sum', 'budget', 'aggregated')])
 
-<<<<<<< HEAD
-        '''
-        ordered_vars.extend([
-            ('sum', 'act_time', 0),
-            ('sum', 'act_time', 1),
-            ('sum', 'act_time', 2),
-            ('sum', 'act_time', 3),
-            ('sum', 'act_time', 4),
-            ('sum', 'act_time', 'aggregated'),
-            ('sum', 'travel_time', 0),
-            ('sum', 'travel_time', 1),
-            ('sum', 'travel_time', 2),
-            ('sum', 'travel_time', 3),
-            ('sum', 'travel_time', 4),
-            ('sum', 'travel_time', 'aggregated')
-            ])
-        '''
-=======
+
         # ordered_vars.extend([
         #     ('sum', 'act_time', 'aggregated'),
         #     ('sum', 'travel_time', 'aggregated'),
@@ -472,7 +454,6 @@ class BeamSearch():
         #     ('sum', 'travel_time', 1),
         #     ('sum', 'travel_time', 0)])
 
->>>>>>> master
         print "assigning variables in beam search in this order:"
         print ordered_vars
 
@@ -758,8 +739,6 @@ class BacktrackingSearch():
         # END_YOUR_CODE
 
 
-# importing get_or_variable helper function from util
-get_or_variable = util.get_or_variable
 
 
 def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
@@ -1010,13 +989,8 @@ class SchedulingCSPConstructor():
         # self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
-<<<<<<< HEAD
-        #self.add_time_constraints(csp)
-        self.add_weighted_travel_time_constraints(csp)
-        self.add_penalize_none_constraints(csp)
-=======
+
         # self.add_time_constraints(csp)
         # self.add_weighted_travel_time_constraints(csp)
         # self.add_penalize_none_constraints(csp)
->>>>>>> master
         return csp

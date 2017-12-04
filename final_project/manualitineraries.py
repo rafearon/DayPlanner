@@ -4,28 +4,6 @@ import googlemaps
 import copy
 import json
 
-class DriveTime:
-
-    def __init__(self, id, a_latitude, a_longitude, b_latitude, b_longitude):
-    	self.lat1 = float(a_latitude)
-    	self.lon1 = float(a_longitude)
-    	self.lat2 = float(b_latitude)
-    	self.lon2 = float(b_longitude)
-    	self.id = id
-
-    def get_drive_time(self):
-    	return self.get_drive_time_google()
-    	return util.haversine_miles(self.lat1, self.lon1, self.lat2, self.lon2) * submission.time_per_mile
-
-    def get_drive_time_google(self):
-        gmaps = googlemaps.Client('AIzaSyCySdoDiRjhD4r978JpCt59EHdLPqyC5mc')
-        directions = gmaps.directions((self.lat1, self.lon1), (self.lat2, self.lon2))
-        driving_time = directions[0]['legs'][0]['duration']['value'] / 60
-        return driving_time
-
-
-    def __str__(self):
-    	return str("Drive: " + str(self.get_drive_time()) + " minutes")
 
 
 class manualItineraryFactory:
@@ -50,7 +28,7 @@ class manualItineraryFactory:
 
 	def get_between_drive(self, newActivity):
 		oldActivity = self.activities[-1]
-		driveTime = DriveTime(self.idCounter + 1, oldActivity['coordinates']['latitude'], oldActivity['coordinates']['longitude'], newActivity['coordinates']['latitude'], newActivity['coordinates']['longitude'])
+		driveTime = util.DriveTime(oldActivity, newActivity, id = self.idCounter + 1)
 		return driveTime
 
 
@@ -65,7 +43,7 @@ class manualItineraryFactory:
 
 
 
-frommersOracleFactory = manualItineraryFactory(37.42358, -122.170733)
+frommersOracleFactory = manualItineraryFactory(37.7738203, -122.4270772)
 frommersOracleFactory.add_activity({"rating": 4.5, "review_count": 384, "name": "San Francisco Museum of Modern Art", "url": "https://www.yelp.com/biz/san-francisco-museum-of-modern-art-san-francisco-6?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "transactions": [], "coordinates": {"latitude": 37.785716, "longitude": -122.40105}, "phone": "+14153574000", "image_url": "https://s3-media1.fl.yelpcdn.com/bphoto/-WIg5ZJcQ553ZC4n-wYOkA/o.jpg", "is_closed": False, "display_phone": "(415) 357-4000", "id": "san-francisco-museum-of-modern-art-san-francisco-6", "categories": [{"alias": "artmuseums", "title": "Art Museums"}], "location": {"city": "San Francisco", "display_address": ["151 3rd St", "San Francisco, CA 94103"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "151 3rd St", "zip_code": "94103"}}, False)
 frommersOracleFactory.add_activity({"rating": 4.0, "review_count": 2091, "name": "The Original Ghirardelli Ice Cream & Chocolate Shop", "transactions": [], "url": "https://www.yelp.com/biz/the-original-ghirardelli-ice-cream-and-chocolate-shop-san-francisco?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "price": "$$", "location": {"city": "San Francisco", "display_address": ["900 North Point", "Ghirardelli Square", "San Francisco, CA 94109"], "country": "US", "address2": "Ghirardelli Square", "address3": "", "state": "CA", "address1": "900 North Point", "zip_code": "94109"}, "coordinates": {"latitude": 37.8058331714633, "longitude": -122.422949041809}, "phone": "+14154743938", "image_url": "https://s3-media4.fl.yelpcdn.com/bphoto/c1q_ga9agmM7mfs39XnSng/o.jpg", "is_closed": False, "display_phone": "(415) 474-3938", "id": "the-original-ghirardelli-ice-cream-and-chocolate-shop-san-francisco", "categories": [{"alias": "icecream", "title": "Ice Cream & Frozen Yogurt"}, {"alias": "chocolate", "title": "Chocolatiers & Shops"}]}, True)
 frommersOracleFactory.add_activity({"rating": 4.5, "review_count": 830, "name": "Exploratorium", "url": "https://www.yelp.com/biz/exploratorium-san-francisco-2?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "transactions": [], "coordinates": {"latitude": 37.800875, "longitude": -122.398619}, "phone": "+14155284444", "image_url": "https://s3-media2.fl.yelpcdn.com/bphoto/Sse9XcaERbw5iBIxN-Q6Yw/o.jpg", "is_closed": False, "display_phone": "(415) 528-4444", "id": "exploratorium-san-francisco-2", "categories": [{"alias": "venues", "title": "Venues & Event Spaces"}, {"alias": "museums", "title": "Museums"}], "location": {"city": "San Francisco", "display_address": ["Pier 15", "San Francisco, CA 94111"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "Pier 15", "zip_code": "94111"}}, False)
@@ -84,7 +62,7 @@ print frommersScore.get_schedule_score()
 
 
 
-uTripFactory = manualItineraryFactory(37.42358, -122.170733)
+uTripFactory = manualItineraryFactory(37.7738203, -122.4270772)
 uTripFactory.add_activity({"rating": 3.5, "review_count": 1349, "name": "Winchester Mystery House", "url": "https://www.yelp.com/biz/winchester-mystery-house-san-jose?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "transactions": [], "coordinates": {"latitude": 37.3184298425885, "longitude": -121.951062964596}, "phone": "+14082472000", "image_url": "https://s3-media4.fl.yelpcdn.com/bphoto/AHzkgs9pFl43Cqqb_FkiNw/o.jpg", "is_closed": False, "display_phone": "(408) 247-2000", "id": "winchester-mystery-house-san-jose", "categories": [{"alias": "landmarks", "title": "Landmarks & Historical Buildings"}, {"alias": "tours", "title": "Tours"}, {"alias": "museums", "title": "Museums"}], "location": {"city": "San Jose", "display_address": ["525 S Winchester Blvd", "San Jose, CA 95128"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "525 S Winchester Blvd", "zip_code": "95128"}}, False)
 uTripFactory.add_activity({"rating": 4.0, "review_count": 1389, "name": "Park Tavern", "transactions": [], "url": "https://www.yelp.com/biz/park-tavern-san-francisco?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "price": "$$$", "location": {"city": "San Francisco", "display_address": ["1652 Stockton St", "San Francisco, CA 94133"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "1652 Stockton St", "zip_code": "94133"}, "coordinates": {"latitude": 37.80113, "longitude": -122.409}, "phone": "+14159897300", "image_url": "https://s3-media3.fl.yelpcdn.com/bphoto/lA6DrEJD_oAPv1ZeBjGJfg/o.jpg", "is_closed": False, "display_phone": "(415) 989-7300", "id": "park-tavern-san-francisco", "categories": [{"alias": "newamerican", "title": "American (New)"}, {"alias": "breakfast_brunch", "title": "Breakfast & Brunch"}]}, True)
 uTripFactory.add_activity({"rating": 4.5, "review_count": 307, "name": "von Strasser and Lava Vine Winery", "transactions": [], "url": "https://www.yelp.com/biz/von-strasser-and-lava-vine-winery-calistoga-2?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "price": "$$", "location": {"city": "Calistoga", "display_address": ["965 Silverado Trl", "Calistoga, CA 94515"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "965 Silverado Trl", "zip_code": "94515"}, "coordinates": {"latitude": 38.5873611, "longitude": -122.5750066}, "phone": "+17079429500", "image_url": "https://s3-media4.fl.yelpcdn.com/bphoto/Cf1dkM7-7sTmaoM_nxEKag/o.jpg", "is_closed": False, "display_phone": "(707) 942-9500", "id": "von-strasser-and-lava-vine-winery-calistoga-2", "categories": [{"alias": "winetastingroom", "title": "Wine Tasting Room"}]}, False)
@@ -101,6 +79,23 @@ print uTripScore.get_schedule_score()
 
 
 
+
+
+
+
+
+uTripFactory = manualItineraryFactory(37.7738203, -122.4270772)
+uTripFactory.add_activity({"rating": 3.5, "review_count": 129, "name": "Audium - A Theatre of Sound-Sculptured Space", "url": "https://www.yelp.com/biz/audium-a-theatre-of-sound-sculptured-space-san-francisco?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "transactions": [], "coordinates": {"latitude": 37.78838, "longitude": -122.42387}, "phone": "+14157711616", "image_url": "https://s3-media4.fl.yelpcdn.com/bphoto/ju7Q4cwmkQ_iOYoNtJSlyA/o.jpg", "is_closed": False, "display_phone": "(415) 771-1616", "id": "audium-a-theatre-of-sound-sculptured-space-san-francisco", "categories": [{"alias": "theater", "title": "Performing Arts"}], "location": {"city": "San Francisco", "display_address": ["1616 Bush St", "San Francisco, CA 94109"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "1616 Bush St", "zip_code": "94109"}}, False)
+uTripFactory.add_activity({"rating": 4.0, "review_count": 2115, "name": "Samovar Tea Lounge", "transactions": ["pickup", "restaurant_reservation"], "url": "https://www.yelp.com/biz/samovar-tea-lounge-san-francisco-2?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "price": "$$", "location": {"city": "San Francisco", "display_address": ["730 Howard St", "Yerba Buena Gardens", "San Francisco, CA 94103"], "country": "US", "address2": "", "address3": "Yerba Buena Gardens", "state": "CA", "address1": "730 Howard St", "zip_code": "94103"}, "coordinates": {"latitude": 37.7841774486315, "longitude": -122.402068620684}, "phone": "+14152279400", "image_url": "https://s3-media2.fl.yelpcdn.com/bphoto/Lih-sSjqA9-pv0xAuuh7GA/o.jpg", "is_closed": False, "display_phone": "(415) 227-9400", "id": "samovar-tea-lounge-san-francisco-2", "categories": [{"alias": "tea", "title": "Tea Rooms"}, {"alias": "gluten_free", "title": "Gluten-Free"}]}, True)
+uTripFactory.add_activity({"rating": 4.5, "review_count": 847, "name": "Palace Of Fine Arts", "url": "https://www.yelp.com/biz/palace-of-fine-arts-san-francisco?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "transactions": [], "coordinates": {"latitude": 37.8041385, "longitude": -122.448286}, "phone": "+14156082220", "image_url": "https://s3-media2.fl.yelpcdn.com/bphoto/PVn-xdXgyjLf98JYPe10EQ/o.jpg", "is_closed": False, "display_phone": "(415) 608-2220", "id": "palace-of-fine-arts-san-francisco", "categories": [{"alias": "landmarks", "title": "Landmarks & Historical Buildings"}, {"alias": "venues", "title": "Venues & Event Spaces"}], "location": {"city": "San Francisco", "display_address": ["3601 Lyon St", "San Francisco, CA 94123"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "3601 Lyon St", "zip_code": "94123"}}, False)
+uTripFactory.add_activity({"rating": 3.5, "review_count": 651, "name": "Luce", "transactions": [], "url": "https://www.yelp.com/biz/luce-san-francisco?adjust_creative=Ac1Jga9ln_zF96nUd9t7WA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=Ac1Jga9ln_zF96nUd9t7WA", "price": "$$$", "location": {"city": "San Francisco", "display_address": ["888 Howard St", "San Francisco, CA 94103"], "country": "US", "address2": "", "address3": "", "state": "CA", "address1": "888 Howard St", "zip_code": "94103"}, "coordinates": {"latitude": 37.7820272648854, "longitude": -122.404410839081}, "phone": "+14156166566", "image_url": "https://s3-media1.fl.yelpcdn.com/bphoto/yf90z7Fo0PRiJ5Utghsk9w/o.jpg", "is_closed": False, "display_phone": "(415) 616-6566", "id": "luce-san-francisco", "categories": [{"alias": "newamerican", "title": "American (New)"}, {"alias": "desserts", "title": "Desserts"}, {"alias": "wine_bars", "title": "Wine Bars"}]}, True)
+
+
+
+for activity in uTripFactory.get_activities():
+	print activity
+uTripScore = util.ScheduleScore(uTripFactory.get_activities(), manual = True)
+print uTripScore.get_schedule_score()
 
 
 

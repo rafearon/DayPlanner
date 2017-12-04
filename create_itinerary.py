@@ -189,10 +189,12 @@ def main():
   businesses = load_businesses(prefs.activities or GENRE_FILES[prefs.genre])
   restaurants = (load_businesses(prefs.restaurants or RESTAURANT_FILE)
     if prefs.food else None)
-  itinerary = create_itinerary(prefs, businesses, restaurants)
-  #print_itinerary(itinerary)
-  score = util.ScheduleScore(itinerary, baseline=True, food = True)
-  print "Itinerary rank = ", score.get_schedule_score()
+  for i in range(0,100):
+    itinerary = create_itinerary(prefs, businesses, restaurants)
+    #print_itinerary(itinerary)
+    score = util.ScheduleScore(itinerary, baseline=True, food = True)
+    #print "Itinerary rank = ", 
+    print score.get_schedule_score()
 
 if __name__ == "__main__":
     main()
