@@ -151,7 +151,7 @@ class ICM():
                 if w == 0: return w
         return w
 
-    def solve(self, csp, activities, genre, num_assignments = 10):
+    def solve(self, csp, max_iterations = 100, initial_assignment = None, gibbs_sampling = False):
         """
         Solves the given weighted CSP using heuristics as specified in the
         parameter. Note that unlike a typical unweighted CSP where the search
@@ -166,8 +166,7 @@ class ICM():
         """
         # CSP to be solved.
         self.csp = csp
-        self.activities = activities
-        self.genre = genre
+        self.gibbs_sampling = gibbs_sampling
        
         # Reset solutions from previous search.
         self.reset_results()
@@ -175,24 +174,15 @@ class ICM():
         # The dictionary of domains of every variable in the CSP.
         self.domains = {var: list(self.csp.values[var]) for var in self.csp.variables}
 
-        # Set maximum number of assignments
-        self.num_assignments = num_assignments
-
         print "starting ICM"
-        # Perform backtracking search.
        
-        #for i in range (0, self.num_assignments):
-        #print "Starting ICM candidate ", i
-        max_iterations = 100
-        num_iterations = 0
-        self.prev_weight = 1.0
         #assignment = self.get_first_assignment()
         assignment = self.get_assignment_from_backtrack()
         #assignment = self.get_random_assignment()
         weight = 1
-        while num_iterations < max_iterations:
+        for _ in range(0, max_iterations):
             assignment, weight = self.icm(assignment, weight)
-            num_iterations += 1
+
         self.optimalAssignment = assignment
         print "TOTAL WEIGHT OF ASSIGNMENT =", weight
 
@@ -307,13 +297,23 @@ class ICM():
 
             # choose best assignment found, if any
             if len(possible_assignments) != 0:
-                #print "found best local assignment"
-                possible_assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
-                assignment, weight = possible_assignments[0]
-                # print assignment
-                # print "weight", weight
+                assignment, weight = self.get_assignment(possible_assignments)
 
         return (assignment, weight)
+
+    def get_assignment(self, possible_assignments):
+        if not self.gibbs_sampling:
+            possible_assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
+            return possible_assignments[0]
+        else:
+            sum_weights = sum(w for a, w in possible_assignments)
+            r = random.uniform(0, sum_weights)
+            lower_bound = 0
+            for a, w in possible_assignments:
+                if lower_bound + w >= r:
+                    return (a, w)
+                lower_bound += w
+            assert False, "Shouldn't get here"
 
 
 class BeamSearch():
