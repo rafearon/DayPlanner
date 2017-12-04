@@ -1,19 +1,5 @@
 import util, submission, sys
 
-if len(sys.argv) < 2:
-    print "Usage: %s <profile file (e.g., profile3d.txt)>" % sys.argv[0]
-    sys.exit(1)
-
-profilePath = sys.argv[1]
-profile = util.Profile(profilePath)
-profile.print_info()
-# genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
-genreToPath = {'thrill':'../activities_100.json','food':'../restaurants_100.json'}
-# genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
-activities = util.ActivityCollection(profile, genreToPath).activities
-cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
-csp = cspConstructor.get_basic_csp()
-
 def test_beamsearch(k):
   alg = submission.BeamSearch()
   k=100
@@ -46,7 +32,21 @@ def test_icm(max_iterations, initial_assignment, gibbs_sampling):
   else:
     print "no solution found"
 
+if len(sys.argv) < 2:
+    print "Usage: %s <profile file (e.g., profile3d.txt)>" % sys.argv[0]
+    sys.exit(1)
+
+profilePath = sys.argv[1]
+profile = util.Profile(profilePath)
+profile.print_info()
+# genreToPath = {'indoors':'../intellect.json','food':'../restaurants.json','outdoors':'../outdoors.json','thrill':'../thrill.json'}
+genreToPath = {'thrill':'../activities_100.json','food':'../restaurants_100.json'}
+# genreToPath = {'thrill':'../activities_short.json','food':'../restaurants_short.json'}
+activities = util.ActivityCollection(profile, genreToPath).activities
+cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
+csp = cspConstructor.get_basic_csp()
+
 # test_beamsearch(k = 100)
 # test_backtrack(max_num_assignments = 100)
-test_icm(100, None, False)
-test_icm(100, None, True)
+test_icm(max_iterations = 100, initial_assignment = None, gibbs_sampling = False)
+test_icm(max_iterations = 100, initial_assignemtn = None, gibbs_sampling = True)

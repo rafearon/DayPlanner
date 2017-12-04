@@ -178,6 +178,8 @@ class ICM():
        
         #assignment = self.get_first_assignment()
         assignment = self.get_assignment_from_backtrack()
+        if initial_assignment:
+            assignment = initial_assignment
         #assignment = self.get_random_assignment()
         weight = 1
         for _ in range(0, max_iterations):
