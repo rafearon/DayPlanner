@@ -16,7 +16,7 @@ cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 # cspConstructor.add_all_additional_constraints(csp)
 alg = submission.ICM()
-alg.solve(csp, num_assignments = 10, activities = activities, genre = genre)
+alg.solve(csp, max_iterations = 100, gibbs_sampling = False, initial_assignment = None)
 if alg.optimalAssignment:
   print "printing solution"
   util.print_scheduling_solution(alg.optimalAssignment, profile, activities)
