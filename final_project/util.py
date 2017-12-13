@@ -9,7 +9,7 @@ import geopy
 from time import sleep
 from math import radians, cos, sin, asin, sqrt
 
-LIMIT_NUM_ACTIVITIES_PER_FILE = 400
+LIMIT_NUM_ACTIVITIES_PER_FILE = 100
 
 class Time(object):
     duration = 0
@@ -71,6 +71,12 @@ class CSP:
         self.binaryFactors = {}
 
         self.ternaryFactors = {}
+
+    def set_score(self, score):
+        self.score = score
+
+    def get_score(self):
+        return self.score
 
     def add_variable(self, var, domain):
         """
@@ -523,19 +529,26 @@ class Profile:
         print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
 
 def print_all_scheduling_solutions_beam(solutions, profile, ac):
-    if solutions is None: return
+    if solutions is None: return 0
+    max_score = 0
     for s, w in solutions:
         print_scheduling_solution(s, profile, ac)
         print "WEIGHT WAS ", w
         s_score = ScheduleScore(s, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
         print "SCORING MODEL RANK", s_score.get_schedule_score()
+        max_score = max(s_score, max_score)
+    return max_score
 
 def print_all_scheduling_solutions(solutions, profile, ac):
-    if solutions is None: return
+    max_score = 0
+    if solutions is None: return 0
     for s in solutions:
         print_scheduling_solution(s, profile, ac)
         s_score = ScheduleScore(s, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
         print "SCORING MODEL RANK", s_score.get_schedule_score()
+        max_score = max(s_score, max_score)
+    return max_score
+
 
        
         
@@ -560,6 +573,9 @@ def print_scheduling_solution(solution, profile, ac):
     for key, value in solution.items():
         if not isinstance(key, (int, long)):
             print key, '=', value
+    s_score = ScheduleScore(solution, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
+    return s_score.get_schedule_score()
+
 
     
 
@@ -603,7 +619,7 @@ class ActivityScore:
     def yelp_score_reward_nps(self, score):
             if score >= 3.5:
                 return score * self.yelp_score_norm - 2 * (5 - score)
-            if score < 2:
+            if score < 3:
                 return -score * self.yelp_score_norm + 2 * (5 - score)
             else:
                 return self.yelp_score_norm
@@ -879,6 +895,7 @@ class DriveTime:
 
     def get_drive_time_google(self):
         gmaps = googlemaps.Client('AIzaSyCySdoDiRjhD4r978JpCt59EHdLPqyC5mc')
+        #gmaps = googlemaps.Client('AIzaSyA-TKuel7v0_iDzXt4usA4i66MDdyG4Dg0')
         directions = gmaps.directions((self.lat1, self.lon1), (self.lat2, self.lon2))
         driving_time = directions[0]['legs'][0]['duration']['value'] / 60
         return driving_time

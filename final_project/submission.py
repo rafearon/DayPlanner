@@ -807,7 +807,7 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 11 # always keep this odd!
-        self.max_travel_time = 30 #mins
+        self.max_travel_time = 60 #mins
         self.home = activities['home'] #dict 
         self.restaraunts = activities['food']
         self.act_and_rest = dict(activities[profile.genre])
