@@ -1,8 +1,15 @@
-import json, re
+
+import json, re, math, urllib, random
 from datetime import datetime
 from datetime import timedelta
 from enum import Enum
+import simplejson
+import googlemaps
+import geopy
+from time import sleep
+from math import radians, cos, sin, asin, sqrt
 
+LIMIT_NUM_ACTIVITIES_PER_FILE = 100
 
 class Time(object):
     duration = 0
@@ -64,6 +71,12 @@ class CSP:
         self.binaryFactors = {}
 
         self.ternaryFactors = {}
+
+    def set_score(self, score):
+        self.score = score
+
+    def get_score(self):
+        return self.score
 
     def add_variable(self, var, domain):
         """
@@ -334,22 +347,44 @@ def get_or_variable(csp, name, variables, value):
 # self.review_count: number of reviews
 # self.is_food: 1 if restaurant else 0
 class Activity:
+
+    
+    
+
     def __init__(self, unique_id, info, is_restaurant):
         self.name = info['name']
         self.unique_id = unique_id
         self.latitude = float(info['coordinates']['latitude'])
         self.longitude = float(info['coordinates']['longitude'])
         self.rating = float(info['rating'])
-        self.duration = int(info['time_spent_minutes'])
+        try:
+            self.duration = int(info['time_spent_minutes'])
+        except:
+            self.duration = 0
         self.cost = Price[info['price'].replace("$", "m")].value if 'price' in info else 0
         self.review_count = int(info['review_count'])
         self.is_food = is_restaurant
+        try:
+            self.review_count = int(info['review_count'])
+        except:
+            self.review_count = 0
+
 
     def short_str(self): return self.name
 
     def __str__(self):
         return ('Activity{name: %s, unique_id: %d, latitude: %f, longitude: %f, rating: %d, duration: %d, cost: %d, review_count: %d is_food: %d}' %
             (self.name, self.unique_id, self.latitude, self.longitude, self.rating, self.duration, self.cost, self.review_count, self.is_food))
+
+    def __getitem__(self, index):
+        if index == 'rating':
+            return self.rating
+        if index == 'coordinates':
+            return {'latitude': self.latitude, 'longitude': self.longitude}
+        if index == 'review_count':
+            return self.review_count
+        if index == 'is_food':
+            return self.is_food
 
 
 # Information about all the activities
@@ -375,13 +410,22 @@ class ActivityCollection:
         # self.activities[profile.genre].update(self.activities['food'])
 
     def load_activities(self, path, genre):
+        lines = None
+        tokens = None
         with open(path, 'r') as activities:
+            lines = sum(1 for _ in activities)
+            tokens = random.sample(xrange(lines), min(LIMIT_NUM_ACTIVITIES_PER_FILE, lines))
+        with open(path, 'r') as activities:
+            a_linecount = 0
             for a in activities:
-                info = json.loads(a)
-                if not self.is_valid_activity(info): continue
-                activity = Activity(self.cur_id, info, genre == 'food')
-                self.activities[genre][activity.unique_id] = activity
-                self.cur_id += 1
+                if a_linecount in tokens:
+                    info = json.loads(a)
+                    if not self.is_valid_activity(info): continue
+                    activity = Activity(self.cur_id, info, genre == 'food')
+                    self.activities[genre][activity.unique_id] = activity
+                    self.cur_id += 1
+                a_linecount += 1
+
 
     def is_valid_activity(self, info):
         return not (info['coordinates']['latitude'] is None or
@@ -485,17 +529,29 @@ class Profile:
         print "Starting coordinates: (%f, %f)" % (self.user_latitude, self.user_longitude)
 
 def print_all_scheduling_solutions_beam(solutions, profile, ac):
-    if solutions is None: return
+    if solutions is None: return 0
+    max_score = 0
     for s, w in solutions:
         print_scheduling_solution(s, profile, ac)
         print "WEIGHT WAS ", w
-        print
+        s_score = ScheduleScore(s, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
+        print "SCORING MODEL RANK", s_score.get_schedule_score()
+        max_score = max(s_score, max_score)
+    return max_score
 
 def print_all_scheduling_solutions(solutions, profile, ac):
-    if solutions is None: return
+    max_score = 0
+    if solutions is None: return 0
     for s in solutions:
         print_scheduling_solution(s, profile, ac)
-        print
+        s_score = ScheduleScore(s, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
+        print "SCORING MODEL RANK", s_score.get_schedule_score()
+        max_score = max(s_score, max_score)
+    return max_score
+
+
+       
+        
 
 def print_scheduling_solution(solution, profile, ac):
     if solution == None:
@@ -517,6 +573,246 @@ def print_scheduling_solution(solution, profile, ac):
     for key, value in solution.items():
         if not isinstance(key, (int, long)):
             print key, '=', value
+    s_score = ScheduleScore(solution, dict(ac[profile.genre].items() + ac["food"].items()), True, profile = ac)
+    return s_score.get_schedule_score()
+
+
+    
+
+
+
+
+
+
+
+
+class ActivityScore:
+    
+
+
+
+
+    def __init__(self, activity):
+        self.yelp_score_norm = 10
+
+
+        self.meal_time_norm = 1
+        self.meal_time_flex = 30
+
+        self.breakfast_start = 8
+        self.breakfast_end = 10
+
+        self.lunch_start = 11.5
+        self.lunch_end = 14
+
+        self.dinner_start = 17.5
+        self.dinner_end = 20
+
+
+        self.review_counts_factor = 100
+
+
+
+        self.activity = activity
+
+
+    def yelp_score_reward_nps(self, score):
+            if score >= 3.5:
+                return score * self.yelp_score_norm - 2 * (5 - score)
+            if score < 3:
+                return -score * self.yelp_score_norm + 2 * (5 - score)
+            else:
+                return self.yelp_score_norm
+
+    def review_counts_reward(self, counts):
+        return math.log(counts, 2) * self.activity['rating']
+
+
+    def get_score(self):
+        return self.yelp_score_reward_nps(self.activity['rating']) + self.review_counts_reward(self.activity['review_count'])
+
+
+
+    def meal_time_reward(self, time):
+            breakfast_range = range(self.breakfast_start, self.breakfast_end)
+            lunch_range = range(self.lunch_start, self.lunch_end)
+            dinner_range = range(self.dinner_start, self.dinner_end)
+
+            
+
+
+
+class DriveScore:
+
+    def __init__(self, drive_activity):
+            self.drive_activity = drive_activity
+            self.drive_score_norm = 2
+
+
+    def get_drive_score(self):
+        base = (self.drive_activity.get_drive_time())
+        upper_cutoff = 45
+        too_much = base - upper_cutoff
+        too_little = 15
+        if base <= too_little:
+            return self.drive_score_norm * base * 1.25
+        if too_much < 0:
+            return self.drive_score_norm * base
+        else:
+            return self.drive_score_norm * (upper_cutoff + too_much**2)
+
+
+    def drive_time_cost(self, time):
+            return time * self.drive_score_norm
+
+    def get_score(self):
+        return self.drive_time_cost(self.drive_activity['time'])
+
+
+    def get_drive_time(self, lat1, long1, lat2, long2):
+        #FIX
+
+        orig_coord = (float(lat1), float(long1))
+        dest_coord = (float(lat2), float(long2))
+
+        dist = geopy.distance.distance(orig_coord, dest_coord).miles
+        return dist
+
+
+
+    def get_cost_between_activities(self, activity1, activity2):
+        act1Coords = activity1['coordinates']
+        act2Coords = activity2['coordinates']
+        cost = self.drive_score_norm * self.get_drive_time(act1Coords['latitude'], act1Coords['longitude'], act2Coords['latitude'], act2Coords['longitude'])
+        return cost
+
+
+
+
+
+class ScheduleScore:
+
+
+
+
+
+        def __init__(self, schedule, activities=None, food = False, baseline = False, manual = False, profile = None):
+            self.schedule = schedule
+            self.activities = activities
+            self.activity_score = 0
+            self.drive_score = 0
+            self.total_score = 0
+            self.food_required = food
+            self.baseline = baseline
+            self.manual = manual
+            self.profile = profile
+            if self.manual:
+                self.sum_manual_scores()
+            elif self.baseline:
+                self.sum_activity_scores_baseline()
+                self.sum_drive_scores_baseline()
+            else:
+                self.sum_activity_scores()
+            self.total_score = self.activity_score - self.drive_score
+
+
+
+
+
+        def sum_manual_scores(self):
+            for idx, activity in enumerate(self.schedule):
+                if idx % 2 == 0 and idx > 0 and idx != len(self.schedule) - 1:
+                    ac = ActivityScore(activity)
+                    self.activity_score += ac.get_score()
+                elif idx % 2 != 0:
+                    ds = DriveScore(activity)
+                    self.drive_score += ds.get_drive_score()
+
+
+
+
+        def get_schedule_score(self):
+            return self.total_score
+                
+
+
+        def sum_activity_scores_baseline(self):
+            for activity in self.schedule:
+                activity_score = ActivityScore(activity)
+                self.activity_score += activity_score.get_score()
+
+
+
+        def sum_drive_scores_baseline(self):
+            for i in range(0, len(self.schedule)-1):
+                    for j in range(1, len(self.schedule)):
+                        if i == j-1:
+                            dt = DriveTime(self.schedule[i], self.schedule[j])
+                            ds = DriveScore(dt)
+                            self.drive_score += ds.get_drive_score()
+
+
+
+
+
+        def sum_activity_scores(self):
+            score = 0
+            time_slots = 11
+    # print all activity and time slots first
+            for slot in range(time_slots):
+                value = self.schedule[slot]
+                if value == -1:
+                    pass
+                elif slot % 2 == 0 and value != None:
+                    ac = ActivityScore(self.activities[value])
+                    self.activity_score += ac.get_score()
+                elif slot % 2 != 0 and slot > 0 and slot + 1 < time_slots:
+                    actID = self.schedule[slot - 1]
+                    if actID == -1:
+                        startActivity = self.profile['home'][-1]
+                    else:
+                        startActivity = self.activities[actID]
+                    nextActID = self.schedule[slot + 1]
+                    if nextActID == -1:
+                        endActivity = self.profile['home'][-1]
+                    else:
+                        endActivity = self.activities[nextActID]
+                    dt = DriveTime(startActivity, endActivity)
+                    ds = DriveScore(dt)
+                    self.drive_score += ds.get_drive_score()
+
+
+
+
+
+
+def haversine_miles(lat1, lon1, lat2, lon2):
+    return haversine(lat1, lon1, lat2, lon2) * 0.62137119
+
+
+
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    # Radius of earth in kilometers is 6371
+    km = 6371* c
+    return km
+
+
+
+
+
+
+
 
 def parse_schedule(schedule):
     assignment = {}
@@ -570,3 +866,40 @@ def parse_backtrack_schedule():
         ('sum', 'budget', 2) = (50, 60)\n\
         ('sum', 'budget', 1) = (10, 50)"
     return parse_schedule(schedule)
+
+
+
+
+
+
+
+class DriveTime:
+
+    def __init__(self, id, a_latitude, a_longitude, b_latitude, b_longitude):
+        self.lat1 = float(a_latitude)
+        self.lon1 = float(a_longitude)
+        self.lat2 = float(b_latitude)
+        self.lon2 = float(b_longitude)
+        self.id = id
+
+    def __init__(self, act1, act2, id = 0):
+        self.lat1 = act1['coordinates']['latitude']
+        self.lon1 = act1['coordinates']['longitude']
+        self.lat2 = act2['coordinates']['latitude']
+        self.lon2 = act2['coordinates']['longitude']
+        self.id = id
+
+    def get_drive_time(self):
+        return self.get_drive_time_google()
+        return util.haversine_miles(self.lat1, self.lon1, self.lat2, self.lon2) * submission.time_per_mile
+
+    def get_drive_time_google(self):
+        gmaps = googlemaps.Client('AIzaSyCySdoDiRjhD4r978JpCt59EHdLPqyC5mc')
+        #gmaps = googlemaps.Client('AIzaSyA-TKuel7v0_iDzXt4usA4i66MDdyG4Dg0')
+        directions = gmaps.directions((self.lat1, self.lon1), (self.lat2, self.lon2))
+        driving_time = directions[0]['legs'][0]['duration']['value'] / 60
+        return driving_time
+
+
+    def __str__(self):
+        return str("Drive: " + str(self.get_drive_time()) + " minutes")

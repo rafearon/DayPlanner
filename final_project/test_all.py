@@ -1,4 +1,5 @@
 import util, submission, sys
+from datetime import datetime
 
 def test_beamsearch(k):
   alg = submission.BeamSearch()
@@ -7,7 +8,7 @@ def test_beamsearch(k):
 
   if alg.allAssignments:
     print "printing k=%d assignments found" % k
-    util.print_all_scheduling_solutions_beam(alg.allAssignments, profile, activities)
+    return util.print_all_scheduling_solutions_beam(alg.allAssignments, profile, activities)
   else:
     print "no solution found"
   return alg.allAssignments
@@ -17,7 +18,7 @@ def test_backtrack(max_num_assignments):
   alg.solve(csp, mcv = True, ac3 = False, max_num_assignments = max_num_assignments)
   if alg.allOptimalAssignments:
     print "all optimal assignments"
-    util.print_all_scheduling_solutions(alg.allOptimalAssignments, profile, activities)
+    return util.print_all_scheduling_solutions(alg.allOptimalAssignments, profile, activities)
   else:
     print "no solution found"
   return alg.allOptimalAssignments
@@ -28,7 +29,7 @@ def test_icm(max_iterations, initial_assignment, gibbs_sampling):
     initial_assignment = initial_assignment, gibbs_sampling = gibbs_sampling)
   if alg.optimalAssignment:
     print "printing solution"
-    util.print_scheduling_solution(alg.optimalAssignment, profile, activities)
+    return util.print_scheduling_solution(alg.optimalAssignment, profile, activities)
   else:
     print "no solution found"
 
@@ -46,7 +47,25 @@ activities = util.ActivityCollection(profile, genreToPath).activities
 cspConstructor = submission.SchedulingCSPConstructor(activities, profile)
 csp = cspConstructor.get_basic_csp()
 
-# test_beamsearch(k = 100)
+
+
+
+for i in range(0,100):
+  startTime = datetime.now()
+  alg = submission.BacktrackingSearch()
+  alg.solve(csp, mcv = True, ac3 = False, max_num_assignments = 10)
+  backtrackStart = util.print_all_scheduling_solutions(alg.allOptimalAssignments, profile, activities)
+  score = test_icm(100,  alg.optimalAssignment, True)
+  runTime = datetime.now() - startTime
+  with open("gibbs_runtimes.txt", 'a') as file:
+    file.write(str(runTime) + "\n")
+  with open("gibbs_scores.txt", 'a') as file:
+    file.write(str(score) + "\n")
+  with open("backtrack_start_score.txt", 'a') as file:
+    file.write(str(backtrackStart) + "\n")
+
+
+
 # test_backtrack(max_num_assignments = 100)
 test_icm(max_iterations = 100, initial_assignment = None, gibbs_sampling = False)
 test_icm(max_iterations = 100, initial_assignment = None, gibbs_sampling = True)

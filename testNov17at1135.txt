@@ -1,0 +1,14 @@
+
+Itinerary found with 3 activities: 
+   1) San Gregorio Beach
+    rating: 3.5
+    review_count: 8
+    address: Hwy 1 And Hwy 84 South Coastside, CA 94060
+   2) Roosevelt Beach State Beach
+    rating: 4.5
+    review_count: 12
+    address: Young Ave Half Moon Bay, CA 94019
+   3) Frida Colibries Restaurant & Bar
+    rating: 4.0
+    review_count: 71
+    address: 820 Veterans Blvd Ste B Redwood City, CA 94063

@@ -1,0 +1,161 @@
+Budget: 60
+Time: 09:00 - 20:00 (total of 660 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  60
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting add review count constraints
+ending add review count constraints
+starting ICR
+Starting ICR candidate  0
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  0  =  20307.1823257
+Starting ICR candidate  1
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  1  =  14993.4233825
+Starting ICR candidate  2
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  2  =  4070.12014963
+Starting ICR candidate  3
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  3  =  16424.2669934
+Starting ICR candidate  4
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  4  =  38258.9781225
+Starting ICR candidate  5
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  5  =  18354.4338753
+Starting ICR candidate  6
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  6  =  30664.1669264
+Starting ICR candidate  7
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  7  =  5616.59902372
+Starting ICR candidate  8
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  8  =  16896.7255022
+Starting ICR candidate  9
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  9  =  11414.5572904
+ending ICR
+No solution was found.
+printing k=10 assignments found
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: The Barn, unique_id: 485, latitude: 37.493659, longitude: -122.453976, rating: 4, duration: 30, cost: 30, review_count: 281 is_food: 1}
+None
+Activity{name: Baxter Chang Patri Fine Art, unique_id: 1280, latitude: 37.785660, longitude: -122.409410, rating: 5, duration: 100, cost: 0, review_count: 2 is_food: 0}
+None
+Activity{name: Alice's Restaurant, unique_id: 744, latitude: 37.386580, longitude: -122.265460, rating: 4, duration: 30, cost: 30, review_count: 901 is_food: 1}
+None
+Activity{name: The Beer Hall, unique_id: 378, latitude: 37.776700, longitude: -122.417983, rating: 4, duration: 30, cost: 30, review_count: 151 is_food: 1}
+None
+('sum', 'budget', 2) = (13, 37)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 0)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (40, 44)
+('sum', 'budget', 'aggregated') = 44
+('sum', 'food', 3) = (1, 0)
+('sum', 'budget', 0) = (45, 56)
+('sum', 'food', 2) = (0, 1)
+('sum', 'budget', 1) = (37, 51)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Berkeley Running Company, unique_id: 1041, latitude: 37.876810, longitude: -122.269310, rating: 5, duration: 120, cost: 60, review_count: 6 is_food: 0}
+None
+Activity{name: The Lark Bar, unique_id: 1043, latitude: 37.787254, longitude: -122.403038, rating: 4, duration: 120, cost: 10, review_count: 99 is_food: 0}
+None
+Activity{name: Lokanta, unique_id: 23, latitude: 37.660190, longitude: -121.876410, rating: 4, duration: 30, cost: 30, review_count: 558 is_food: 1}
+None
+Activity{name: Cascade Restaurant, unique_id: 221, latitude: 37.156611, longitude: -122.348910, rating: 3, duration: 30, cost: 30, review_count: 135 is_food: 1}
+None
+('sum', 'budget', 2) = (41, 3)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 1)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (46, 47)
+('sum', 'budget', 'aggregated') = 47
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (60, 7)
+('sum', 'food', 2) = (1, 0)
+('sum', 'budget', 1) = (38, 56)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Santa Cruz City Arts: City of Santa Cruz, unique_id: 1271, latitude: 36.974370, longitude: -122.029400, rating: 5, duration: 100, cost: 0, review_count: 1 is_food: 0}
+None
+Activity{name: Seal Cove Beach, unique_id: 801, latitude: 37.522007, longitude: -122.513603, rating: 4, duration: 180, cost: 0, review_count: 4 is_food: 0}
+None
+Activity{name: Ed Levin County Park, unique_id: 911, latitude: 37.448712, longitude: -121.847393, rating: 4, duration: 180, cost: 0, review_count: 125 is_food: 0}
+None
+Activity{name: CycleBar Westgate West, unique_id: 1169, latitude: 37.292618, longitude: -121.995437, rating: 4, duration: 120, cost: 0, review_count: 19 is_food: 0}
+None
+('sum', 'budget', 2) = (32, 27)
+('sum', 'food', 'aggregated') = 0
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (31, 3)
+('sum', 'budget', 'aggregated') = 3
+('sum', 'food', 3) = (0, 0)
+('sum', 'budget', 0) = (12, 2)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (14, 20)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Studio K-Fit, unique_id: 1186, latitude: 37.478271, longitude: -122.187314, rating: 5, duration: 120, cost: 0, review_count: 27 is_food: 0}
+None
+Activity{name: Danbi Korean Restaurant, unique_id: 1547, latitude: 37.356257, longitude: -121.904974, rating: 4, duration: 30, cost: 30, review_count: 198 is_food: 0}
+None
+Activity{name: Camelot Fish & Chips, unique_id: 908, latitude: 37.649110, longitude: -122.492130, rating: 4, duration: 30, cost: 30, review_count: 522 is_food: 0}
+None
+Activity{name: Wicked Woods, unique_id: 1255, latitude: 37.237390, longitude: -121.972640, rating: 3, duration: 120, cost: 0, review_count: 11 is_food: 0}
+None
+('sum', 'budget', 2) = (14, 16)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 0)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (13, 50)
+('sum', 'budget', 'aggregated') = 50
+('sum', 'food', 3) = (1, 0)
+('sum', 'budget', 0) = (54, 15)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (47, 13)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Bob's Hoagy Steaks, unique_id: 1405, latitude: 37.558070, longitude: -122.005860, rating: 4, duration: 20, cost: 10, review_count: 354 is_food: 0}
+None
+Activity{name: FG Bakery Cafe, unique_id: 396, latitude: 37.473232, longitude: -122.216857, rating: 4, duration: 30, cost: 30, review_count: 55 is_food: 1}
+None
+Activity{name: Little Dipper Shabu Shabu, unique_id: 418, latitude: 37.491554, longitude: -121.929893, rating: 4, duration: 30, cost: 30, review_count: 797 is_food: 1}
+None
+Activity{name: Noodle Shop, unique_id: 257, latitude: 37.543618, longitude: -122.308310, rating: 4, duration: 20, cost: 10, review_count: 317 is_food: 1}
+None
+('sum', 'budget', 2) = (42, 6)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (0, 1)
+('sum', 'food', 0) = (0, 0)
+('sum', 'budget', 3) = (45, 44)
+('sum', 'budget', 'aggregated') = 44
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (56, 35)
+('sum', 'food', 2) = (1, 0)
+('sum', 'budget', 1) = (59, 48)
+
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Beer Baron Livermore, unique_id: 5, latitude: 37.681758, longitude: -121.768368, rating: 3, duration: 30, cost: 30, review_count: 172 is_food: 1}
+None

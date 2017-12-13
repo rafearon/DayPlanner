@@ -1,0 +1,36 @@
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+Drive: 10 minutes
+Activity{name: San Francisco Museum of Modern Art, unique_id: 1, latitude: 37.785716, longitude: -122.401050, rating: 4, duration: 0, cost: 0, review_count: 384 is_food: 0}
+Drive: 16 minutes
+Activity{name: The Original Ghirardelli Ice Cream & Chocolate Shop, unique_id: 3, latitude: 37.805833, longitude: -122.422949, rating: 4, duration: 0, cost: 30, review_count: 2091 is_food: 1}
+Drive: 11 minutes
+Activity{name: Exploratorium, unique_id: 5, latitude: 37.800875, longitude: -122.398619, rating: 4, duration: 0, cost: 0, review_count: 830 is_food: 0}
+Drive: 7 minutes
+Activity{name: Boudin Bakery & Cafe, unique_id: 7, latitude: 37.808410, longitude: -122.415079, rating: 4, duration: 0, cost: 30, review_count: 2735 is_food: 1}
+Drive: 20 minutes
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+194.057894978
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+Drive: 53 minutes
+Activity{name: Winchester Mystery House, unique_id: 1, latitude: 37.318430, longitude: -121.951063, rating: 3, duration: 0, cost: 0, review_count: 1349 is_food: 0}
+Drive: 62 minutes
+Activity{name: Park Tavern, unique_id: 3, latitude: 37.801130, longitude: -122.409000, rating: 4, duration: 0, cost: 60, review_count: 1389 is_food: 1}
+Drive: 95 minutes
+Activity{name: von Strasser and Lava Vine Winery, unique_id: 5, latitude: 38.587361, longitude: -122.575007, rating: 4, duration: 0, cost: 30, review_count: 307 is_food: 0}
+Drive: 97 minutes
+Activity{name: The Cavalier, unique_id: 7, latitude: 37.783346, longitude: -122.406836, rating: 4, duration: 0, cost: 60, review_count: 832 is_food: 1}
+Drive: 11 minutes
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+-11195.3676296
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+Drive: 10 minutes
+Activity{name: Audium - A Theatre of Sound-Sculptured Space, unique_id: 1, latitude: 37.788380, longitude: -122.423870, rating: 3, duration: 0, cost: 0, review_count: 129 is_food: 0}
+Drive: 12 minutes
+Activity{name: Samovar Tea Lounge, unique_id: 3, latitude: 37.784177, longitude: -122.402069, rating: 4, duration: 0, cost: 30, review_count: 2115 is_food: 1}
+Drive: 22 minutes
+Activity{name: Palace Of Fine Arts, unique_id: 5, latitude: 37.804139, longitude: -122.448286, rating: 4, duration: 0, cost: 0, review_count: 847 is_food: 0}
+Drive: 26 minutes
+Activity{name: Luce, unique_id: 7, latitude: 37.782027, longitude: -122.404411, rating: 3, duration: 0, cost: 60, review_count: 651 is_food: 1}
+Drive: 10 minutes
+Activity{name: home, unique_id: -1, latitude: 37.773820, longitude: -122.427077, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+115.205842969

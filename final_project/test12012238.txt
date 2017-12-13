@@ -1,0 +1,72 @@
+Budget: 60
+Time: 09:00 - 20:00 (total of 660 minutes)
+Genre: thrill
+Food: yes
+Starting coordinates: (37.423580, -122.170733)
+max travel time is  60
+starting add variables
+ending add variables
+starting add budget constraints
+ending add budget constraints
+starting add_different_activity_constraints
+ending add_different_activity_constraints
+starting add rating constaints
+ending add travel time constaints
+starting add food constaints
+ending add food constaints
+starting add review count constraints
+ending add review count constraints
+starting ICR
+Starting ICR candidate  0
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  0  =  16812.2148558
+Starting ICR candidate  1
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  1  =  16423.3657405
+Starting ICR candidate  2
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  2  =  17519.6790455
+Starting ICR candidate  3
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  3  =  8.95108654511e+56
+Starting ICR candidate  4
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  4  =  42079.6175204
+Starting ICR candidate  5
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  5  =  13553.3957894
+Starting ICR candidate  6
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  6  =  36453.4864452
+Starting ICR candidate  7
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  7  =  9410.19744793
+Starting ICR candidate  8
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  8  =  inf
+Starting ICR candidate  9
+Round 0
+TOTAL WEIGHT OF ASSIGNMENT  9  =  60845.8975807
+ending ICR
+No solution was found.
+printing k=10 assignments found
+Activity{name: home, unique_id: -1, latitude: 37.423580, longitude: -122.170733, rating: 5, duration: 0, cost: 0, review_count: 0 is_food: 0}
+None
+Activity{name: Hinodeya Ramen Bar, unique_id: 731, latitude: 37.786157, longitude: -122.430057, rating: 4, duration: 30, cost: 30, review_count: 405 is_food: 1}
+None
+Activity{name: Ono Hawaiian BBQ, unique_id: 131, latitude: 37.155560, longitude: -121.650520, rating: 2, duration: 20, cost: 10, review_count: 86 is_food: 1}
+None
+Activity{name: Thai Noodle II, unique_id: 1488, latitude: 37.866386, longitude: -122.258896, rating: 3, duration: 20, cost: 10, review_count: 269 is_food: 0}
+None
+Activity{name: Srasa Kitchen, unique_id: 448, latitude: 37.396686, longitude: -122.061382, rating: 4, duration: 20, cost: 10, review_count: 203 is_food: 1}
+None
+('sum', 'budget', 2) = (57, 13)
+('sum', 'food', 'aggregated') = 1
+('sum', 'food', 1) = (1, 1)
+('sum', 'food', 0) = (0, 1)
+('sum', 'budget', 3) = (13, 0)
+('sum', 'budget', 'aggregated') = 0
+('sum', 'food', 3) = (0, 1)
+('sum', 'budget', 0) = (7, 52)
+('sum', 'food', 2) = (0, 0)
+('sum', 'budget', 1) = (5, 2)

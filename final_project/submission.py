@@ -1,87 +1,11 @@
+
 import collections, util, copy, random
 import math
 from math import *
 import geopy.distance
 import collections, util, copy
-
 time_per_mile = 2 # minutes
 
-############################################################
-# Problem 0
-
-# Hint: Take a look at the CSP class and the CSP examples in util.py
-def create_chain_csp(n):
-    # same domain for each variable
-    domain = [0, 1]
-    # name variables as x_1, x_2, ..., x_n
-    # variables = ['x%d'%i for i in range(1, n+1)]
-    csp = util.CSP()
-    # Problem 0c
-    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        csp.add_variable(variable, domain)
-    if len(variables) <= 1: return csp
-    for i in range(0, len(variables)):
-        variable = variables[i]
-        if i < len(variables) - 1:
-            next_variable = variables[i+1]
-            csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
-    # END_YOUR_CODE
-    return csp
-
-def create_ternary_test_csp(n):
-    # same domain for each variable
-    domain = [0, 1]
-    # name variables as x_1, x_2, ..., x_n
-    # variables = ['x%d'%i for i in range(1, n+1)]
-    csp = util.CSP()
-    # Problem 0c
-    # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    for i in range(0, n):
-        # variable = variables[i]
-        csp.add_variable(i, domain)
-    csp.add_ternary_factor(0, 1, 2, lambda x, y, z: x + y + z == 2)
-    # if len(variables) <= 1: return csp
-    # for i in range(0, len(variables)):
-    #     variable = variables[i]
-    #     if i < len(variables) - 1:
-    #         next_variable = variables[i+1]
-    #         csp.add_binary_factor(variable, next_variable, lambda x, y : x ^ y)
-    # END_YOUR_CODE
-    return csp
-
-
-############################################################
-# Problem 1
-
-def create_nqueens_csp(n = 8):
-    """
-    Return an N-Queen problem on the board of size |n| * |n|.
-    You should call csp.add_variable() and csp.add_binary_factor().
-
-    @param n: number of queens, or the size of one dimension of the board.
-
-    @return csp: A CSP problem with correctly configured factor tables
-        such that it can be solved by a weighted CSP solver.
-    """
-    csp = util.CSP()
-    # Problem 1a
-    # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-    # queens encode column number
-    # encodes row number
-    options = []
-    for i in range (0, n):
-        options.append(i)
-    for i in range (0, n):
-        csp.add_variable(i, options)
-    if n <= 1: return csp
-    for i in range (0, n):
-        if i < n - 1:
-            for j in range(i+1, n):
-                csp.add_binary_factor(i, j, lambda x, y : (x-y) != 0 and (abs(x-y)) != abs(i-j))
-    # END_YOUR_CODE
-    return csp
 
 class ICM():
 
@@ -431,6 +355,8 @@ class BeamSearch():
         # Print summary of solutions.
         #self.print_stats()
 
+
+
     def beamsearch(self):
         """
         Perform beam search to find k possible solutions to
@@ -448,6 +374,8 @@ class BeamSearch():
         for var in self.get_ordered_vars(self.csp):
             extended = self.extend_assignments(assignments, var)
             assignments = self.prune_assignments(extended)
+            #print extended
+            #print assignments
             num_assigned += 1
             # for a, w in assignments:
             #     print a, w
@@ -471,7 +399,8 @@ class BeamSearch():
                 deltaWeight = self.get_delta_weight(assignment, var, val)
                 if deltaWeight > 0:
                     # Copy assignment with new var, val pair into extended assignments
-                    newAssignment = assignment.copy()
+                    #print "dw > 0"
+                    newAssignment = copy.deepcopy(assignment)
                     newAssignment[var] = val
                     newWeight = weight * deltaWeight
                     extended_assignments.append((newAssignment, newWeight))
@@ -484,8 +413,12 @@ class BeamSearch():
         """
         # Sort assignments by weight
         assignments.sort(key=lambda (assignment, weight): weight, reverse=True)
+
         # Return top k assignments
-        return assignments[:self.k]
+        #print len(assignments)
+        new_assignments = assignments[:self.k]
+        return new_assignments
+
 
     def get_ordered_vars(self, csp):
         num_slots = 11
@@ -507,6 +440,7 @@ class BeamSearch():
             ('sum', 'budget', 2),
             ('sum', 'budget', 3),
             ('sum', 'budget', 'aggregated')])
+
 
         # ordered_vars.extend([
         #     ('sum', 'act_time', 'aggregated'),
@@ -807,11 +741,12 @@ class BacktrackingSearch():
         # END_YOUR_CODE
 
 
-# importing get_or_variable helper function from util
-get_or_variable = util.get_or_variable
 
 
 def find_travel_time(a_latitude, a_longitude, b_latitude, b_longitude):
+	return util.haversine_miles(a_latitude, a_longitude, b_latitude, b_longitude)
+
+def find_travel_time_geopy(a_latitude, a_longitude, b_latitude, b_longitude):
     coords_1 = (a_latitude, a_longitude)
     coords_2 = (b_latitude, b_longitude)
     distance = geopy.distance.vincenty(coords_1, coords_2).miles
@@ -872,12 +807,16 @@ class SchedulingCSPConstructor():
         self.activities = activities[profile.genre] # dict
         self.profile = profile
         self.num_slots = 11 # always keep this odd!
-        self.max_travel_time = 30 #mins
+        self.max_travel_time = 60 #mins
         self.home = activities['home'] #dict 
         self.restaraunts = activities['food']
         self.act_and_rest = dict(activities[profile.genre])
         self.act_and_rest.update(self.restaraunts)
         print "max travel time is ", self.max_travel_time
+
+
+    def get_activity_by_key(self, key):
+        return self.activities[self.genre][key]
 
     def add_variables(self, csp, user_long, user_lat):
         print "starting add variables"
@@ -1052,6 +991,7 @@ class SchedulingCSPConstructor():
         # self.add_food_constraints(csp)
         self.add_review_count_constraints(csp)
         self.add_slot_travel_time_constraints(csp)
+
         # self.add_time_constraints(csp)
         # self.add_weighted_travel_time_constraints(csp)
         # self.add_penalize_none_constraints(csp)
